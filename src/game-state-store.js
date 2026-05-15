@@ -1,4 +1,5 @@
 let playing = false;
+let activeRailIndices = [1];
 
 export const gameStateStore = {
   get isPlaying() {
@@ -7,7 +8,14 @@ export const gameStateStore = {
   set isPlaying(value) {
     playing = value;
   },
+  get activeRailIndices() {
+    return activeRailIndices;
+  },
+  set activeRailIndices(value) {
+    activeRailIndices = value;
+  },
   reset() {
     playing = false;
+    activeRailIndices = [1];
   }
 };

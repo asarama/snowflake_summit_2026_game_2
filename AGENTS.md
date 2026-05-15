@@ -4,10 +4,10 @@
 
 This is a simple A-Frame/Vite game prototype for a rail-grinding character.
 
-The player starts on the center of three parallel rails and moves forward automatically. The current gameplay loop is:
+The player starts on a single center rail and moves forward automatically. Additional rails unlock at distance milestones. The current gameplay loop is:
 
-- Press `A` to hop one rail to the left.
-- Press `D` to hop one rail to the right.
+- Press `A` to hop one rail to the left (only when that rail is unlocked).
+- Press `D` to hop one rail to the right (only when that rail is unlocked).
 - Press `W` (or `ArrowUp`) to jump over obstacles.
 - Switching rails creates a hop animation.
 - Jumping creates a higher hop arc and prevents obstacle collisions while airborne.
@@ -36,8 +36,10 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 ## Key files
 
 - **`src/game-state-store.js`**
-  - Centralized shared module exporting `gameStateStore` with a single `isPlaying` boolean getter/setter.
-  - `game-state.js` is the sole writer; all gameplay components read from it to gate their `tick()` behavior.
+  - Centralized shared module exporting `gameStateStore` with `isPlaying` boolean and `activeRailIndices` array getter/setter.
+  - `activeRailIndices` starts at `[1]` (center rail only) and expands as the player reaches distance thresholds.
+  - `game-state.js` is the sole writer to `isPlaying`; `player-controls` writes `activeRailIndices` when thresholds are crossed.
+  - All gameplay components read from it to gate their `tick()` behavior and determine which rails to render/allow.
 
 - **`src/main.js`**
   - Builds the A-Frame scene via `app.innerHTML`.
@@ -99,10 +101,12 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Defines simple X/Z collision radii used by `player-controls`.
 
 - **`src/components/platform-generator.js`**
-  - Generates platform segments made of ground, three rails, obstacles, and collectibles.
+  - Generates platform segments made of ground, rails, obstacles, and collectibles.
+  - Only generates rails, obstacles, and collectibles whose rail index is present in `gameStateStore.activeRailIndices`.
   - Maintains a rolling set of platform entities ahead of the player.
   - Reads `gameStateStore.isPlaying` to gate its `tick()`.
   - Removes the oldest platform after the player passes its end and appends a new platform farther forward.
+  - Listens for `rail-unlock` and retroactively adds the newly unlocked rail to existing visible platforms.
 
 - **`src/components/game-state.js`**
   - Manages game flow: start screen, 3-second countdown, 60-second timer, and game over screen.
@@ -118,9 +122,12 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 
 - The player rig is the entity with `id="rig"` in `src/main.js`.
 - The camera is a child of the rig so it naturally follows the player.
-- The rails are generated per platform as `a-box` entities positioned at `x = -2.4`, `x = 0`, and `x = 2.4`.
-- Static obstacles are generated per platform as simple `a-box` entities with the `obstacle` component.
-- `player-controls` uses `railCount` and `railSpacing` defaults/attributes to determine rail X positions.
+- The rails are generated per platform as `a-box` entities positioned at `x = -2.4`, `x = 0`, and `x = 2.4`, but only the currently unlocked subset is rendered.
+- Static obstacles are generated per platform as simple `a-box` entities with the `obstacle` component, filtered to only appear on unlocked rails.
+  - `player-controls` clamps rail switching to `gameStateStore.activeRailIndices`, preventing hops to locked rails.
+  - Emits `rail-unlock` event when the player crosses a distance threshold, updating `gameStateStore.activeRailIndices`.
+  - Resets `gameStateStore.activeRailIndices` to `[1]` on `game-reset`.
+- Rails unlock at distance milestones: the first additional rail unlocks at **50m**, and the final rail unlocks at **150m**.
 - The game uses browser `CustomEvent`s for lightweight communication:
   - `game-speed` updates HUD, sparks, and camera.
   - `game-score` updates HUD score (total distance traveled from `player-controls`).

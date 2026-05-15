@@ -1,5 +1,6 @@
 import AFRAME from 'aframe';
 import { SPEED } from '../config/speed.js';
+import { RAIL_UNLOCKS } from '../config/rails.js';
 import { gameStateStore } from '../game-state-store.js';
 
 const { THREE } = AFRAME;
@@ -92,6 +93,7 @@ AFRAME.registerComponent('player-controls', {
     this.isJumping = false;
     this.jumpElapsed = 0;
     this.keys.clear();
+    gameStateStore.activeRailIndices = [1];
 
     const position = this.el.object3D.position;
     position.copy(this.initialPosition);
@@ -152,6 +154,7 @@ AFRAME.registerComponent('player-controls', {
     position.y = Math.max(switchY, jumpY);
     this.checkObstacleCollisions(previousZ);
     this.checkCollectibleCollisions(previousZ);
+    this.checkRailUnlocks();
   },
 
   getRailX(rail) {
@@ -161,9 +164,12 @@ AFRAME.registerComponent('player-controls', {
   },
 
   switchRail(nextRail) {
-    const clampedRail = THREE.MathUtils.clamp(nextRail, 0, this.data.railCount - 1);
+    const activeRails = gameStateStore.activeRailIndices;
+    const minRail = Math.min(...activeRails);
+    const maxRail = Math.max(...activeRails);
+    const clampedRail = THREE.MathUtils.clamp(nextRail, minRail, maxRail);
 
-    if (clampedRail === this.targetRail) {
+    if (clampedRail === this.targetRail || !activeRails.includes(clampedRail)) {
       return;
     }
 
@@ -321,6 +327,17 @@ AFRAME.registerComponent('player-controls', {
       }));
       collectible.parentNode.remove();
       break;
+    }
+  },
+
+  checkRailUnlocks() {
+    for (const unlock of RAIL_UNLOCKS) {
+      if (this.totalDistance >= unlock.distance && !gameStateStore.activeRailIndices.includes(unlock.newRail)) {
+        gameStateStore.activeRailIndices = unlock.activeRailIndices;
+        window.dispatchEvent(new CustomEvent('rail-unlock', {
+          detail: { activeRailIndices: unlock.activeRailIndices, newRail: unlock.newRail }
+        }));
+      }
     }
   }
 });

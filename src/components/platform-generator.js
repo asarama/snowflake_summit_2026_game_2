@@ -1,5 +1,6 @@
 import AFRAME from 'aframe';
 import { gameStateStore } from '../game-state-store.js';
+import { RAIL_UNLOCKS } from '../config/rails.js';
 
 const PLATFORM_LENGTH = 100;
 const RAIL_SPACING = 2.4;
@@ -34,6 +35,20 @@ AFRAME.registerComponent('platform-generator', {
     }
 
     window.addEventListener('game-reset', () => this.resetPlatforms());
+    window.addEventListener('rail-unlock', (event) => this.onRailUnlock(event));
+  },
+
+  onRailUnlock(event) {
+    const { newRail } = event.detail;
+
+    for (const platform of this.platforms) {
+      const centerZ = platform.startZ - this.data.platformLength / 2;
+      const existingRail = platform.el.querySelector(`[data-rail-index="${newRail}"]`);
+
+      if (!existingRail) {
+        this.createRail(platform.el, centerZ, newRail);
+      }
+    }
   },
 
   tick() {
@@ -97,20 +112,37 @@ AFRAME.registerComponent('platform-generator', {
   },
 
   addRails(platform, centerZ) {
-    for (let rail = 0; rail < this.data.railCount; rail += 1) {
-      const railEntity = document.createElement('a-box');
+    const activeRails = gameStateStore.activeRailIndices;
 
-      railEntity.setAttribute('position', { x: this.getRailX(rail), y: 0, z: centerZ });
-      railEntity.setAttribute('width', 0.16);
-      railEntity.setAttribute('height', 0.16);
-      railEntity.setAttribute('depth', this.data.platformLength);
-      railEntity.setAttribute('material', 'color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.65; roughness: 0.2');
-      platform.appendChild(railEntity);
+    for (let rail = 0; rail < this.data.railCount; rail += 1) {
+      if (!activeRails.includes(rail)) {
+        continue;
+      }
+
+      this.createRail(platform, centerZ, rail);
     }
   },
 
+  createRail(platform, centerZ, rail) {
+    const railEntity = document.createElement('a-box');
+
+    railEntity.setAttribute('data-rail-index', rail);
+    railEntity.setAttribute('position', { x: this.getRailX(rail), y: 0, z: centerZ });
+    railEntity.setAttribute('width', 0.16);
+    railEntity.setAttribute('height', 0.16);
+    railEntity.setAttribute('depth', this.data.platformLength);
+    railEntity.setAttribute('material', 'color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.65; roughness: 0.2');
+    platform.appendChild(railEntity);
+  },
+
   addObstacles(platform, startZ) {
+    const activeRails = gameStateStore.activeRailIndices;
+
     for (const obstacleConfig of OBSTACLES) {
+      if (!activeRails.includes(obstacleConfig.rail)) {
+        continue;
+      }
+
       const obstacle = document.createElement('a-box');
 
       obstacle.setAttribute('obstacle', '');
@@ -128,7 +160,13 @@ AFRAME.registerComponent('platform-generator', {
   },
 
   addCollectibles(platform, startZ) {
+    const activeRails = gameStateStore.activeRailIndices;
+
     for (const collectibleConfig of COLLECTIBLES) {
+      if (!activeRails.includes(collectibleConfig.rail)) {
+        continue;
+      }
+
       const collectibleGroup = document.createElement('a-entity');
       const collisionBox = document.createElement('a-box');
       const collectible = document.createElement('a-octahedron');

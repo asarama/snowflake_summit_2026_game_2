@@ -92,7 +92,7 @@ AFRAME.registerComponent('game-state', {
 
   restartGame() {
     this.state = 'start';
-    gameStateStore.isPlaying = false;
+    gameStateStore.reset();
     this.timeRemaining = this.data.gameDuration;
     this.score = 0;
     this.timerDisplay.textContent = this.data.gameDuration;
