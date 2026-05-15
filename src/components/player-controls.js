@@ -41,8 +41,16 @@ AFRAME.registerComponent('player-controls', {
 
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
-    window.addEventListener('game-start', () => { this.isPlaying = true; });
-    window.addEventListener('game-end', () => { this.isPlaying = false; this.speed = 0; this.currentMaxSpeed = this.data.maxSpeed; });
+    window.addEventListener('game-start', () => { 
+      this.isPlaying = true; 
+      this.keys.clear();
+    });
+    window.addEventListener('game-end', () => { 
+      this.isPlaying = false; 
+      this.speed = 0; 
+      this.currentMaxSpeed = this.data.maxSpeed;
+      this.keys.clear();
+    });
     window.addEventListener('collectible-collected', () => {
       this.speed = Math.min(this.speed + this.data.collectibleBoost, this.data.collectibleMaxSpeed);
       this.currentMaxSpeed = Math.min(this.currentMaxSpeed + this.data.collectibleBoost, this.data.collectibleMaxSpeed);
@@ -240,7 +248,7 @@ AFRAME.registerComponent('player-controls', {
       window.dispatchEvent(new CustomEvent('collectible-collected', {
         detail: { x: collectiblePosition.x, y: collectiblePosition.y, z: collectiblePosition.z }
       }));
-      collectible.parentNode.parentNode.removeChild(collectible.parentNode);
+      collectible.parentNode.remove();
       break;
     }
   }
