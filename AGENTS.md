@@ -137,6 +137,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - `collectible-collected` boosts player speed beyond regular max.
   - `rail-land` triggers landing impact visuals after rail switches.
   - `obstacle-hit` triggers obstacle impact sparks and camera shake.
+  - `rail-unlock` notifies that a new rail distance threshold was reached, updating visible rails and switchable range.
 
 ## Development guidance
 

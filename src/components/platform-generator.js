@@ -1,6 +1,5 @@
 import AFRAME from 'aframe';
 import { gameStateStore } from '../game-state-store.js';
-import { RAIL_UNLOCKS } from '../config/rails.js';
 
 const PLATFORM_LENGTH = 100;
 const RAIL_SPACING = 2.4;
