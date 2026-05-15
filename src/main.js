@@ -60,7 +60,7 @@ app.innerHTML = `
     background="color: #07111f"
     renderer="antialias: true; colorManagement: true"
     platform-generator="player: #rig; platformCount: 3; platformLength: 36; railCount: 3; railSpacing: 2.4; startZ: 18"
-    rail-unlock-spawner="player: #rig; spawnDistance: 60; railSpacing: 2.4"
+    rail-unlock-spawner="player: #rig; spawnDistance: 500; railSpacing: 2.4"
     game-state="gameDuration: 60"
   >
     <a-assets>
