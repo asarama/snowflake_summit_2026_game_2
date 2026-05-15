@@ -127,13 +127,14 @@ AFRAME.registerComponent('platform-generator', {
       const collisionBox = document.createElement('a-box');
       const collectible = document.createElement('a-octahedron');
 
-      collectibleGroup.classList.add('collectible');
+      collectibleGroup.classList.add('collectible-group');
       collectibleGroup.setAttribute('position', {
         x: this.getRailX(collectibleConfig.rail),
         y: 1.2,
         z: startZ + collectibleConfig.z
       });
 
+      collisionBox.classList.add('collectible');
       collisionBox.setAttribute('collectible', '');
       collisionBox.setAttribute('position', '0 0 0');
       collisionBox.setAttribute('width', 0.8);

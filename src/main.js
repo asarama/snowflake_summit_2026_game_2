@@ -27,11 +27,15 @@ app.innerHTML = `
     <div class="overlay-content">
       <h2>Snowflake Summit</h2>
       <p>Grind the rails, avoid obstacles, and collect crystals!</p>
+      <label class="toggle-row">
+        <input type="checkbox" id="skip-countdown">
+        Skip countdown
+      </label>
       <button class="start-button" id="start-button">Start Game</button>
     </div>
   </div>
 
-  <div class="overlay hidden" id="countdown-screen">
+  <div class="overlay countdown-overlay hidden" id="countdown-screen">
     <div class="overlay-content">
       <div class="countdown" id="countdown">3</div>
     </div>
