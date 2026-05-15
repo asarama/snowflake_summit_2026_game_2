@@ -31,7 +31,7 @@ AFRAME.registerComponent('game-state', {
 
     window.addEventListener('rail-unlock-collected', (event) => {
       const tier = event.detail.tier;
-      const message = tier === 0 ? 'Greybeam Powerup: DuckDB engine unlocked!' : 'Greybeam Powerup: Firebolt engine unlocked!';
+      const message = tier === 0 ? 'DuckDB engine unlocked!' : 'Firebolt engine unlocked!';
       this.showUnlockMessage(message);
     });
   },

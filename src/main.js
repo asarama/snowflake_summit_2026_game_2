@@ -44,6 +44,7 @@ app.innerHTML = `
 
   <div class="overlay message-overlay hidden" id="unlock-message-screen">
     <div class="overlay-content">
+      <div class="unlock-header">Greybeam Powerup!</div>
       <div class="unlock-message" id="unlock-message"></div>
     </div>
   </div>
