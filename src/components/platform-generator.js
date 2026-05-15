@@ -1,6 +1,6 @@
 import AFRAME from 'aframe';
 
-const PLATFORM_LENGTH = 36;
+const PLATFORM_LENGTH = 100;
 const RAIL_SPACING = 2.4;
 const OBSTACLES = [
   { rail: 0, z: -8 },
@@ -37,10 +37,13 @@ AFRAME.registerComponent('platform-generator', {
     const playerZ = player.object3D.position.z;
     const oldestPlatform = this.platforms[0];
 
-    if (playerZ < oldestPlatform.endZ) {
-      oldestPlatform.el.remove();
-      this.platforms.shift();
-      this.createPlatform();
+    if (playerZ < oldestPlatform.endZ && !oldestPlatform.pendingRemoval) {
+      oldestPlatform.pendingRemoval = true;
+      setTimeout(() => {
+        oldestPlatform.el.remove();
+        this.platforms.shift();
+        this.createPlatform();
+      }, 1000);
     }
   },
 
