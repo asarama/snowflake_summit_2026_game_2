@@ -20,8 +20,8 @@ AFRAME.registerComponent('speed-camera', {
     boomShakeStrength: { type: 'number', default: 0.18 },
     obstacleShakeDuration: { type: 'number', default: 360 },
     obstacleShakeStrength: { type: 'number', default: 0.28 },
-    topSpeedShakeStrength: { type: 'number', default: 0.035 },
-    easing: { type: 'number', default: 5 }
+    topSpeedShakeStrength: { type: 'number', default: 0.055 },
+    easing: { type: 'number', default: 15 }
   },
 
   init() {

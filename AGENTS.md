@@ -10,8 +10,9 @@ The player starts on a single center rail and moves forward automatically. Addit
 - Press `D` to hop one rail to the right (only when that rail is unlocked).
 - Press `W` (or `ArrowUp`) to jump over obstacles.
 - Collect the glowing power-up to unlock the next rail. Collecting any one removes all spawned power-ups.
-- The first power-up unlocks a neon yellow rail and pauses gameplay to display "First".
-- The second power-up unlocks a neon red rail and pauses gameplay to display "Second".
+- The first power-up unlocks a neon yellow rail and pauses gameplay to display a "Greybeam Powerup!" overlay with "DuckDB engine unlocked!".
+- The second power-up unlocks a neon red rail and pauses gameplay to display a "Greybeam Powerup!" overlay with "Firebolt engine unlocked!".
+- A 3-2-1 countdown is shown during the unlock pause so the player knows when gameplay will resume.
 - Switching rails creates a hop animation.
 - Jumping creates a higher hop arc and prevents obstacle collisions while airborne.
 - Landing after a rail switch creates a short spark impact burst.
@@ -124,13 +125,16 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - **`src/components/game-state.js`**
   - Manages game flow: start screen, 3-second countdown, 60-second timer, and game over screen.
   - Is the **sole writer** to `gameStateStore.isPlaying`, setting it to `true` on begin and `false` on end/reset.
-  - Temporarily pauses `isPlaying` and the timer for 2.5 seconds when a `rail-unlock-collected` event is received, displaying "First" or "Second" in a message overlay.
+  - Temporarily pauses `isPlaying` and the timer for ~2.5 seconds when a `rail-unlock-collected` event is received.
+  - Displays a transparent glassmorphism overlay with a static "Greybeam Powerup!" header and a dynamic engine-unlocked message (e.g., "DuckDB engine unlocked!" or "Firebolt engine unlocked!").
+  - Shows a visible 3-2-1 countdown during the pause so the player knows exactly when gameplay resumes.
   - Emits `game-start`, `game-end`, and `game-reset` events.
   - Tracks score and displays final score on game over.
 
 - **`src/styles.css`**
   - HUD and page styling.
   - Overlay styles for start screen, countdown, timer, and game over.
+  - The unlock message overlay uses a transparent glassmorphism panel with a static header, dynamic engine message, and a 3-2-1 countdown.
 
 ## Current architecture notes
 
@@ -143,7 +147,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Resets `gameStateStore.activeRailIndices` to `[1]` on `game-reset`.
 - Rails unlock by collecting special power-ups, not by distance. The spawner places power-ups ahead on all active rails; collecting any one removes all and triggers the unlock.
 - The first power-up unlocks the right rail (neon yellow). The second unlocks the left rail (neon red).
-- Collecting a power-up pauses gameplay and the timer for 2.5 seconds to display a message overlay.
+- Collecting a power-up pauses gameplay and the timer for ~2.5 seconds to display a transparent "Greybeam Powerup!" overlay with the unlocked engine name and a visible 3-2-1 countdown.
 - The game uses browser `CustomEvent`s for lightweight communication:
   - `game-speed` updates HUD, sparks, and camera.
   - `game-score` updates HUD score (total distance traveled from `player-controls`).
