@@ -117,6 +117,14 @@ AFRAME.registerComponent('player-controls', {
       this.currentRail = this.targetRail;
       position.x = this.switchTargetX;
       position.y = 0;
+      window.dispatchEvent(new CustomEvent('rail-land', {
+        detail: {
+          rail: this.currentRail,
+          x: position.x,
+          z: position.z,
+          speed: this.speed
+        }
+      }));
     }
   }
 });

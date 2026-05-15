@@ -21,6 +21,8 @@ AFRAME.registerComponent('grind-sparks', {
     this.sparkTier = 0;
     this.boomAge = 1000;
     this.boomLifetime = 520;
+    this.impactAge = 1000;
+    this.impactLifetime = 260;
     this.sparkRoot = document.createElement('a-entity');
     this.sparkRoot.setAttribute('id', 'spark-root');
     this.el.sceneEl.appendChild(this.sparkRoot);
@@ -29,7 +31,10 @@ AFRAME.registerComponent('grind-sparks', {
       this.speed = event.detail.speed;
     };
 
+    this.onRailLand = (event) => this.triggerRailImpact(event.detail);
+
     window.addEventListener('game-speed', this.onSpeed);
+    window.addEventListener('rail-land', this.onRailLand);
 
     for (let index = 0; index < this.data.count; index += 1) {
       const spark = document.createElement('a-sphere');
@@ -53,10 +58,20 @@ AFRAME.registerComponent('grind-sparks', {
     this.boom.setAttribute('material', 'color: #ffffff; emissive: #8be9fd; emissiveIntensity: 1.6; transparent: true; opacity: 0.85');
     this.boom.object3D.visible = false;
     this.sparkRoot.appendChild(this.boom);
+
+    this.impact = document.createElement('a-torus');
+    this.impact.setAttribute('position', '0 0.08 0');
+    this.impact.setAttribute('rotation', '90 0 0');
+    this.impact.setAttribute('radius', '0.12');
+    this.impact.setAttribute('radius-tubular', '0.012');
+    this.impact.setAttribute('material', 'color: #ffd166; emissive: #ff8c00; emissiveIntensity: 1.8; transparent: true; opacity: 0.9');
+    this.impact.object3D.visible = false;
+    this.sparkRoot.appendChild(this.impact);
   },
 
   remove() {
     window.removeEventListener('game-speed', this.onSpeed);
+    window.removeEventListener('rail-land', this.onRailLand);
     this.sparkRoot.remove();
   },
 
@@ -101,6 +116,7 @@ AFRAME.registerComponent('grind-sparks', {
     });
 
     this.updateSonicBoom(delta);
+    this.updateRailImpact(delta);
   },
 
   getSparkTier() {
@@ -155,6 +171,30 @@ AFRAME.registerComponent('grind-sparks', {
     this.spawnCursor = (this.spawnCursor + 1) % this.sparks.length;
   },
 
+  spawnImpactSpark(position, tier) {
+    const spark = this.sparks[this.spawnCursor];
+    const angle = Math.random() * Math.PI * 2;
+    const force = 1.3 + tier * 0.35;
+    const horizontalForce = 1.8 + Math.random() * 1.5;
+
+    spark.age = 0;
+    spark.entity.object3D.visible = true;
+    spark.entity.setAttribute('material', this.getSparkMaterial(tier));
+    spark.entity.object3D.position.set(
+      position.x + (Math.random() - 0.5) * 0.18,
+      this.data.railY,
+      position.z + (Math.random() - 0.5) * 0.18
+    );
+    spark.entity.object3D.scale.setScalar(1.35);
+    spark.velocity.set(
+      Math.cos(angle) * horizontalForce * force,
+      (1.2 + Math.random() * 1.2) * force,
+      Math.sin(angle) * horizontalForce * force
+    );
+
+    this.spawnCursor = (this.spawnCursor + 1) % this.sparks.length;
+  },
+
   getRailPosition() {
     const position = this.el.object3D.position;
 
@@ -189,6 +229,24 @@ AFRAME.registerComponent('grind-sparks', {
     this.boom.object3D.scale.setScalar(0.2);
   },
 
+  triggerRailImpact(detail) {
+    const tier = this.getSparkTier();
+    const position = {
+      x: detail.x,
+      z: detail.z
+    };
+    const burstCount = 8 + tier * 4;
+
+    this.impactAge = 0;
+    this.impact.object3D.visible = true;
+    this.impact.object3D.position.set(position.x, 0.08, position.z);
+    this.impact.object3D.scale.setScalar(0.25);
+
+    for (let index = 0; index < burstCount; index += 1) {
+      this.spawnImpactSpark(position, tier);
+    }
+  },
+
   updateSonicBoom(delta) {
     if (this.boomAge >= this.boomLifetime) {
       this.boom.object3D.visible = false;
@@ -204,5 +262,22 @@ AFRAME.registerComponent('grind-sparks', {
     this.boom.object3D.scale.setScalar(scale);
     this.boom.setAttribute('material', 'opacity', opacity);
     this.boom.object3D.visible = progress < 1;
+  },
+
+  updateRailImpact(delta) {
+    if (this.impactAge >= this.impactLifetime) {
+      this.impact.object3D.visible = false;
+      return;
+    }
+
+    this.impactAge += delta;
+
+    const progress = THREE.MathUtils.clamp(this.impactAge / this.impactLifetime, 0, 1);
+    const scale = THREE.MathUtils.lerp(0.25, 2.1, THREE.MathUtils.smoothstep(progress, 0, 1));
+    const opacity = 1 - progress;
+
+    this.impact.object3D.scale.setScalar(scale);
+    this.impact.setAttribute('material', 'opacity', opacity);
+    this.impact.object3D.visible = progress < 1;
   }
 });

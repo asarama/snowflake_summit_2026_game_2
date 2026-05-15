@@ -11,6 +11,7 @@ The player starts on the center of three parallel rails and moves forward automa
 - Press `A` to hop one rail to the left.
 - Press `D` to hop one rail to the right.
 - Switching rails creates a hop animation.
+- Landing after a rail switch creates a short spark impact burst.
 - Grinding creates speed-dependent sparks.
 - Crossing speed tiers creates a sonic boom effect.
 - Camera position, FOV, and shake respond to speed.
@@ -43,6 +44,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - **`src/components/player-controls.js`**
   - Owns player speed, braking/acceleration, forward rail movement, wrapping, and rail switching.
   - Emits `game-speed` events every tick with the current speed.
+  - Emits `rail-land` when a rail-switch hop finishes.
   - Uses rig `position.y` for the rail-switch hop arc.
   - Uses `SPEED.start`, `SPEED.min`, and `SPEED.max` as defaults.
 
@@ -52,6 +54,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Only spawns new sparks when the player is on the rail.
   - Uses speed tiers for spark density/color.
   - Creates the sonic boom visual when crossing upward into a higher speed tier.
+  - Listens for `rail-land` to create a short landing impact burst and ring.
   - Uses `SPEED.mediumTier` and `SPEED.highTier` as defaults.
 
 - **`src/components/speed-camera.js`**
@@ -79,6 +82,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - The game uses browser `CustomEvent`s for lightweight communication:
   - `game-speed` updates HUD, sparks, and camera.
   - `game-score` updates HUD score.
+  - `rail-land` triggers landing impact visuals after rail switches.
 
 ## Development guidance
 
