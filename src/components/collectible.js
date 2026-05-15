@@ -1,11 +1,5 @@
 import AFRAME from 'aframe';
 
-let score = 0;
-
-window.addEventListener('game-reset', () => {
-  score = 0;
-});
-
 AFRAME.registerComponent('collectible', {
   schema: {
     points: { type: 'number', default: 1 },
@@ -30,9 +24,7 @@ AFRAME.registerComponent('collectible', {
   },
 
   collect() {
-    score += this.data.points;
     const position = this.el.object3D.position;
-    window.dispatchEvent(new CustomEvent('game-score', { detail: { score } }));
     window.dispatchEvent(new CustomEvent('collectible-collected', {
       detail: { x: position.x, y: position.y, z: position.z }
     }));

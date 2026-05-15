@@ -35,6 +35,7 @@ AFRAME.registerComponent('player-controls', {
     this.wasRightPressed = false;
     this.activeObstacle = null;
     this.isPlaying = false;
+    this.totalDistance = 0;
 
     this.initialPosition = this.el.object3D.position.clone();
     this.initialRail = this.currentRail;
@@ -79,6 +80,7 @@ AFRAME.registerComponent('player-controls', {
     this.isPlaying = false;
     this.speed = this.data.startSpeed;
     this.currentMaxSpeed = this.data.maxSpeed;
+    this.totalDistance = 0;
     this.currentRail = this.initialRail;
     this.targetRail = this.initialRail;
     this.switchElapsed = 0;
@@ -143,6 +145,11 @@ AFRAME.registerComponent('player-controls', {
     this.wasLeftPressed = leftPressed;
     this.wasRightPressed = rightPressed;
     position.z -= this.speed * seconds;
+    this.totalDistance += Math.abs(this.speed) * seconds;
+
+    window.dispatchEvent(new CustomEvent('game-score', {
+      detail: { score: Math.floor(this.totalDistance) }
+    }));
 
     this.updateRailSwitch(delta);
     this.checkObstacleCollisions(previousZ);

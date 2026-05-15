@@ -12,14 +12,14 @@ The player starts on the center of three parallel rails and moves forward automa
 - Press `D` to hop one rail to the right.
 - Switching rails creates a hop animation.
 - Landing after a rail switch creates a short spark impact burst.
-- Static obstacles block rails, set player speed to a negative knockback value, bounce the player backward, create sparks, and shake the camera on collision.
+- Static obstacles block rails, set player speed to a negative knockback value, reset max speed to default, bounce the player backward, create sparks, and shake the camera on collision.
 - Grinding creates speed-dependent sparks and stops generating new grind sparks below `0.5` speed.
 - Crossing speed tiers creates a sonic boom effect.
 - Camera position, FOV, and shake respond to speed.
 - The path is generated as platform segments containing rails, ground, and obstacles.
 - Three platform segments exist at startup; when the player moves past the oldest segment, it is destroyed and a new segment is generated ahead.
 - Game starts with a start screen overlay, then a 3-second countdown, then 60 seconds of gameplay.
-- After 60 seconds, the game ends with a dimmed overlay showing the final score and a restart button.
+- After 60 seconds, the game ends with a dimmed overlay showing the final score (distance traveled in meters) and a restart button.
 
 ## Important commands
 
@@ -40,6 +40,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Imports all custom components.
   - Defines the HUD, player rig, camera, lights, collectibles container, and platform generator configuration.
   - Listens for `game-score` and `game-speed` events to update HUD text.
+  - Score displays total distance traveled.
 
 - **`src/config/speed.js`**
   - Shared speed configuration.
@@ -47,14 +48,17 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Components that care about speed thresholds should import from here instead of duplicating constants.
 
 - **`src/components/player-controls.js`**
-  - Owns player speed, braking/acceleration, continuous forward rail movement, and rail switching.
+  - Owns player speed, braking/acceleration, continuous forward rail movement, rail switching, and score (distance traveled).
+  - Tracks `totalDistance` and emits `game-score` every tick with `Math.floor(totalDistance)`.
   - Tracks `currentMaxSpeed` which starts at regular `maxSpeed` and increases with collectibles up to `collectibleMaxSpeed`.
   - Resets `currentMaxSpeed` to regular `maxSpeed` when speed drops (braking, drag, obstacle hit).
   - Checks static `.obstacle` entities with swept Z collision and sets speed to the obstacle knockback value on hit.
+  - On obstacle collision, resets `currentMaxSpeed` back to the default `maxSpeed`.
   - Emits `obstacle-hit` and moves the player slightly backward after obstacle collisions.
   - Tracks only the currently active obstacle so static obstacles can repeatedly block the player after they are clear.
   - Emits `game-speed` events every tick with current speed and max speed.
   - Emits `rail-land` when a rail-switch hop finishes.
+  - Uses `getWorldPosition()` for collectible collision detection because collectibles are nested in groups.
   - Uses rig `position.y` for the rail-switch hop arc.
   - Uses `SPEED.start`, `SPEED.min`, and `SPEED.max` as defaults.
 
@@ -78,9 +82,10 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Uses shared speed min/max/tier defaults from `src/config/speed.js`.
 
 - **`src/components/collectible.js`**
-  - Handles collectible behavior, scoring events, and emits `collectible-collected` event on collection.
+  - Handles collectible behavior and emits `collectible-collected` event on collection.
   - Collectibles are generated per platform on rails by `platform-generator`.
   - Collecting boosts player speed beyond the regular max speed.
+  - The `.collectible` class is only added to the collision box entity, not the parent group.
 
 - **`src/components/obstacle.js`**
   - Marks static rail blockers with the `.obstacle` class.
@@ -109,7 +114,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - `player-controls` uses `railCount` and `railSpacing` defaults/attributes to determine rail X positions.
 - The game uses browser `CustomEvent`s for lightweight communication:
   - `game-speed` updates HUD, sparks, and camera.
-  - `game-score` updates HUD score.
+  - `game-score` updates HUD score (total distance traveled from `player-controls`).
   - `game-start` enables player movement and begins gameplay.
   - `game-end` stops player movement and shows game over screen.
   - `game-reset` resets score and returns to start screen.
