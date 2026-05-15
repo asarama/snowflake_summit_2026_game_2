@@ -4,14 +4,27 @@ const { THREE } = AFRAME;
 
 AFRAME.registerComponent('player-controls', {
   schema: {
-    speed: { type: 'number', default: 4 }
+    startSpeed: { type: 'number', default: 5 },
+    minSpeed: { type: 'number', default: 1.5 },
+    maxSpeed: { type: 'number', default: 13 },
+    acceleration: { type: 'number', default: 7 },
+    brake: { type: 'number', default: 10 },
+    drag: { type: 'number', default: 1.2 },
+    railSpacing: { type: 'number', default: 2.4 },
+    switchDuration: { type: 'number', default: 280 },
+    hopHeight: { type: 'number', default: 0.8 }
   },
 
   init() {
     this.keys = new Set();
-    this.direction = new THREE.Vector3();
-    this.forward = new THREE.Vector3();
-    this.right = new THREE.Vector3();
+    this.speed = this.data.startSpeed;
+    this.currentRail = 1;
+    this.targetRail = 1;
+    this.switchElapsed = 0;
+    this.switchStartX = this.getRailX(this.currentRail);
+    this.switchTargetX = this.switchStartX;
+    this.wasLeftPressed = false;
+    this.wasRightPressed = false;
 
     this.onKeyDown = (event) => this.keys.add(event.code);
     this.onKeyUp = (event) => this.keys.delete(event.code);
@@ -26,27 +39,77 @@ AFRAME.registerComponent('player-controls', {
   },
 
   tick(_time, delta) {
-    this.direction.set(0, 0, 0);
+    const seconds = delta / 1000;
+    const position = this.el.object3D.position;
+    const leftPressed = this.keys.has('KeyA') || this.keys.has('ArrowLeft');
+    const rightPressed = this.keys.has('KeyD') || this.keys.has('ArrowRight');
 
-    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) this.direction.z -= 1;
-    if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) this.direction.z += 1;
-    if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) this.direction.x -= 1;
-    if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) this.direction.x += 1;
+    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) {
+      this.speed += this.data.acceleration * seconds;
+    } else if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) {
+      this.speed -= this.data.brake * seconds;
+    } else {
+      this.speed -= this.data.drag * seconds;
+    }
 
-    if (this.direction.lengthSq() === 0) {
+    this.speed = THREE.MathUtils.clamp(this.speed, this.data.minSpeed, this.data.maxSpeed);
+
+    if (leftPressed && !this.wasLeftPressed) {
+      this.switchRail(0);
+    }
+
+    if (rightPressed && !this.wasRightPressed) {
+      this.switchRail(1);
+    }
+
+    this.wasLeftPressed = leftPressed;
+    this.wasRightPressed = rightPressed;
+    position.z -= this.speed * seconds;
+
+    if (position.z < -48) {
+      position.z = 18;
+    }
+
+    this.updateRailSwitch(delta);
+  },
+
+  getRailX(rail) {
+    return rail === 0 ? -this.data.railSpacing / 2 : this.data.railSpacing / 2;
+  },
+
+  switchRail(nextRail) {
+    if (nextRail === this.targetRail) {
       return;
     }
 
-    this.direction.normalize();
-    this.el.object3D.getWorldDirection(this.forward);
-    this.forward.y = 0;
-    this.forward.normalize();
-    this.right.crossVectors(this.forward, new THREE.Vector3(0, 1, 0)).normalize();
+    this.currentRail = this.targetRail;
+    this.targetRail = nextRail;
+    this.switchElapsed = 0;
+    this.switchStartX = this.el.object3D.position.x;
+    this.switchTargetX = this.getRailX(nextRail);
+  },
 
-    const distance = this.data.speed * (delta / 1000);
+  updateRailSwitch(delta) {
     const position = this.el.object3D.position;
 
-    position.addScaledVector(this.forward, -this.direction.z * distance);
-    position.addScaledVector(this.right, this.direction.x * distance);
+    if (position.x === this.switchTargetX) {
+      position.y = 0;
+      return;
+    }
+
+    this.switchElapsed += delta;
+
+    const progress = THREE.MathUtils.clamp(this.switchElapsed / this.data.switchDuration, 0, 1);
+    const eased = THREE.MathUtils.smoothstep(progress, 0, 1);
+    const hop = Math.sin(progress * Math.PI) * this.data.hopHeight;
+
+    position.x = THREE.MathUtils.lerp(this.switchStartX, this.switchTargetX, eased);
+    position.y = hop;
+
+    if (progress === 1) {
+      this.currentRail = this.targetRail;
+      position.x = this.switchTargetX;
+      position.y = 0;
+    }
   }
 });
