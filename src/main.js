@@ -25,8 +25,8 @@ app.innerHTML = `
 
   <div class="overlay active" id="start-screen">
     <div class="overlay-content">
-      <h2>Snowflake Summit</h2>
-      <p>Grind the rails, avoid obstacles, and collect crystals!</p>
+      <h2>Snowflake Summit 2026 - Query Surfer</h2>
+      <p>Avoid obstacles, collect crystals, and unlock new engines with Greybeam!</p>
       <label class="toggle-row">
         <input type="checkbox" id="skip-countdown">
         Skip countdown

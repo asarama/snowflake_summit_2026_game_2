@@ -1,9 +1,9 @@
 export const SPEED = {
-  start: 5,
-  min: 1.5,
+  start: 2,
+  min: 1,
   max: 30,
-  mediumTier: 15,
-  highTier: 45,
+  mediumTier: 30,
+  highTier: 50,
   veryHighTier: 75,
   extremeTier: 110
 };
