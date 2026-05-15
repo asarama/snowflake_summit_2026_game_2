@@ -89,8 +89,15 @@ app.innerHTML = `
     </a-assets>
 
     <a-entity id="rig" position="0 0 14" player-controls="startSpeed: 5; railCount: 3; railSpacing: 2.4" grind-sparks>
-      <a-box position="0 0.75 0" width="0.7" height="1.1" depth="0.7" material="color: #ffb86c; metalness: 0.15; roughness: 0.45"></a-box>
-      <a-cone position="0 1.55 0" radius-bottom="0.32" radius-top="0.18" height="0.45" material="color: #f8f8f2; metalness: 0.1; roughness: 0.35"></a-cone>
+      <!-- UFO saucer -->
+      <a-cylinder position="0 0.85 0" radius="0.6" height="0.18" segments-radial="16"
+        material="color: #c0c0c0; metalness: 0.5; roughness: 0.3"></a-cylinder>
+      <!-- UFO dome -->
+      <a-sphere position="0 1.05 0" radius="0.3" scale="1 0.65 1"
+        material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.3; metalness: 0.1; roughness: 0.1; opacity: 0.75; transparent: true"></a-sphere>
+      <!-- UFO bottom glow ring -->
+      <a-torus position="0 0.75 0" radius="0.45" radius-tubular="0.04" arc="360"
+        material="color: #50fa7b; emissive: #50fa7b; emissiveIntensity: 0.8"></a-torus>
       <a-camera position="0 3.4 3.5" rotation="-28 0 0" wasd-controls="enabled: false" look-controls="enabled: false" speed-camera>
         <a-cursor raycaster="objects: .collectible" material="color: #ffffff; shader: flat"></a-cursor>
       </a-camera>

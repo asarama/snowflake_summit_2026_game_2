@@ -24,7 +24,7 @@ AFRAME.registerComponent('player-controls', {
     obstacleKnockbackSpeed: { type: 'number', default: -8 },
     collectibleBoost: { type: 'number', default: 1.5 },
     collectibleBoostVariance: { type: 'number', default: 1.0 },
-    collectibleMaxSpeed: { type: 'number', default: 100 }
+    collectibleMaxSpeed: { type: 'number', default: 200 }
   },
 
   init() {
