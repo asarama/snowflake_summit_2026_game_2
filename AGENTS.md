@@ -16,6 +16,8 @@ The player starts on the center of three parallel rails and moves forward automa
 - Grinding creates speed-dependent sparks and stops generating new grind sparks below `0.5` speed.
 - Crossing speed tiers creates a sonic boom effect.
 - Camera position, FOV, and shake respond to speed.
+- The path is generated as platform segments containing rails, ground, and obstacles.
+- Three platform segments exist at startup; when the player moves past the oldest segment, it is destroyed and a new segment is generated ahead.
 
 ## Important commands
 
@@ -34,7 +36,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - **`src/main.js`**
   - Builds the A-Frame scene via `app.innerHTML`.
   - Imports all custom components.
-  - Defines the HUD, player rig, camera, rails, lights, collectibles container, and environment geometry.
+  - Defines the HUD, player rig, camera, lights, collectibles container, and platform generator configuration.
   - Listens for `game-score` and `game-speed` events to update HUD text.
 
 - **`src/config/speed.js`**
@@ -43,7 +45,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Components that care about speed thresholds should import from here instead of duplicating constants.
 
 - **`src/components/player-controls.js`**
-  - Owns player speed, braking/acceleration, forward rail movement, wrapping, and rail switching.
+  - Owns player speed, braking/acceleration, continuous forward rail movement, and rail switching.
   - Checks static `.obstacle` entities with swept Z collision and sets speed to the obstacle knockback value on hit.
   - Emits `obstacle-hit` and moves the player slightly backward after obstacle collisions.
   - Tracks only the currently active obstacle so static obstacles can repeatedly block the player after they are clear.
@@ -80,6 +82,11 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Marks static rail blockers with the `.obstacle` class.
   - Defines simple X/Z collision radii used by `player-controls`.
 
+- **`src/components/platform-generator.js`**
+  - Generates platform segments made of ground, three rails, and repeated static obstacle placements.
+  - Maintains a rolling set of platform entities ahead of the player.
+  - Removes the oldest platform after the player passes its end and appends a new platform farther forward.
+
 - **`src/styles.css`**
   - HUD and page styling.
 
@@ -87,8 +94,8 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 
 - The player rig is the entity with `id="rig"` in `src/main.js`.
 - The camera is a child of the rig so it naturally follows the player.
-- The rails are simple long `a-box` entities positioned at `x = -2.4`, `x = 0`, and `x = 2.4`.
-- Static obstacles are simple `a-box` entities with the `obstacle` component.
+- The rails are generated per platform as `a-box` entities positioned at `x = -2.4`, `x = 0`, and `x = 2.4`.
+- Static obstacles are generated per platform as simple `a-box` entities with the `obstacle` component.
 - `player-controls` uses `railCount` and `railSpacing` defaults/attributes to determine rail X positions.
 - The game uses browser `CustomEvent`s for lightweight communication:
   - `game-speed` updates HUD, sparks, and camera.

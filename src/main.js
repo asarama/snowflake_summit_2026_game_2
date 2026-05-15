@@ -6,6 +6,7 @@ import './components/speed-camera.js';
 import './components/collectible.js';
 import './components/spawner.js';
 import './components/obstacle.js';
+import './components/platform-generator.js';
 
 const app = document.querySelector('#app');
 
@@ -24,6 +25,7 @@ app.innerHTML = `
     background="color: #07111f"
     renderer="antialias: true; colorManagement: true"
     spawner="target: #collectibles; count: 8; radius: 7"
+    platform-generator="player: #rig; platformCount: 3; platformLength: 36; railCount: 3; railSpacing: 2.4; startZ: 18"
   >
     <a-assets>
       <a-mixin id="crystalMaterial" material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.1; roughness: 0.25"></a-mixin>
@@ -40,22 +42,6 @@ app.innerHTML = `
     <a-entity light="type: ambient; intensity: 0.5; color: #b9d9ff"></a-entity>
     <a-entity light="type: directional; intensity: 1.2; color: #ffffff" position="-3 6 4"></a-entity>
     <a-entity light="type: point; intensity: 1.6; color: #66e8ff; distance: 18" position="0 4 0"></a-entity>
-
-    <a-plane position="0 -0.18 -15" rotation="-90 0 0" width="16" height="80" material="color: #0d2038; roughness: 0.9"></a-plane>
-    <a-box position="-2.4 0 -15" width="0.16" height="0.16" depth="74" material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.65; roughness: 0.2"></a-box>
-    <a-box position="0 0 -15" width="0.16" height="0.16" depth="74" material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.65; roughness: 0.2"></a-box>
-    <a-box position="2.4 0 -15" width="0.16" height="0.16" depth="74" material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.65; roughness: 0.2"></a-box>
-    <a-box position="0 -0.12 -15" width="5.6" height="0.08" depth="74" material="color: #14365c; roughness: 0.85"></a-box>
-    <a-box obstacle position="-2.4 0.45 -8" width="0.9" height="0.9" depth="0.8" material="color: #ff5555; emissive: #7f1d1d; emissiveIntensity: 0.45; metalness: 0.2; roughness: 0.35"></a-box>
-    <a-box obstacle position="0 0.45 -20" width="0.9" height="0.9" depth="0.8" material="color: #ff5555; emissive: #7f1d1d; emissiveIntensity: 0.45; metalness: 0.2; roughness: 0.35"></a-box>
-    <a-box obstacle position="2.4 0.45 -32" width="0.9" height="0.9" depth="0.8" material="color: #ff5555; emissive: #7f1d1d; emissiveIntensity: 0.45; metalness: 0.2; roughness: 0.35"></a-box>
-    <a-entity position="0 0 -15">
-      <a-box position="0 -0.4 -28" width="5.7" height="0.35" depth="0.18" material="color: #1f6feb; metalness: 0.2; roughness: 0.35"></a-box>
-      <a-box position="0 -0.4 -14" width="5.7" height="0.35" depth="0.18" material="color: #1f6feb; metalness: 0.2; roughness: 0.35"></a-box>
-      <a-box position="0 -0.4 0" width="5.7" height="0.35" depth="0.18" material="color: #1f6feb; metalness: 0.2; roughness: 0.35"></a-box>
-      <a-box position="0 -0.4 14" width="5.7" height="0.35" depth="0.18" material="color: #1f6feb; metalness: 0.2; roughness: 0.35"></a-box>
-      <a-box position="0 -0.4 28" width="5.7" height="0.35" depth="0.18" material="color: #1f6feb; metalness: 0.2; roughness: 0.35"></a-box>
-    </a-entity>
 
     <a-entity id="collectibles"></a-entity>
 

@@ -84,10 +84,6 @@ AFRAME.registerComponent('player-controls', {
     this.wasRightPressed = rightPressed;
     position.z -= this.speed * seconds;
 
-    if (position.z < -48) {
-      position.z = 18;
-    }
-
     this.updateRailSwitch(delta);
     this.checkObstacleCollisions(previousZ);
   },
