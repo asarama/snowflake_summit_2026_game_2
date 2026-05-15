@@ -140,7 +140,15 @@ AFRAME.registerComponent('platform-generator', {
 
   addFoliage(platform, centerZ) {
     const halfLength = this.data.platformLength / 2;
-    const count = Math.floor(Math.random() * 5) + 4;
+    const count = Math.floor(Math.random() * 6) + 5;
+
+    const PALETTE = [
+      { color: '#00f0ff', emissive: '#00f0ff' },
+      { color: '#ff00aa', emissive: '#ff00aa' },
+      { color: '#7b61ff', emissive: '#7b61ff' },
+      { color: '#39ff14', emissive: '#39ff14' },
+      { color: '#ffea00', emissive: '#ffea00' }
+    ];
 
     for (let i = 0; i < count; i += 1) {
       const z = centerZ + (Math.random() - 0.5) * halfLength * 1.8;
@@ -148,43 +156,70 @@ AFRAME.registerComponent('platform-generator', {
       const xMin = this.data.railSpacing * 1.6;
       const xMax = 7.2;
       const x = side * (xMin + Math.random() * (xMax - xMin));
-      const type = Math.random() < 0.6 ? 'tree' : 'rock';
+      const typeRoll = Math.random();
+      const tint = PALETTE[Math.floor(Math.random() * PALETTE.length)];
 
-      if (type === 'tree') {
+      if (typeRoll < 0.35) {
+        // Data pillar — glowing translucent memory block / server rack
         const group = document.createElement('a-entity');
         group.setAttribute('position', { x, y: 0, z });
 
-        const trunk = document.createElement('a-cylinder');
-        const trunkHeight = 0.6 + Math.random() * 0.6;
-        trunk.setAttribute('position', { x: 0, y: trunkHeight / 2, z: 0 });
-        trunk.setAttribute('radius', 0.08 + Math.random() * 0.04);
-        trunk.setAttribute('height', trunkHeight);
-        trunk.setAttribute('material', 'color: #3e2723; roughness: 0.95');
-        group.appendChild(trunk);
+        const height = 0.8 + Math.random() * 1.4;
+        const segments = Math.max(2, Math.floor(height * 2.5));
+        const segHeight = height / segments;
 
-        const leaves = document.createElement('a-cone');
-        const leavesHeight = 0.7 + Math.random() * 0.5;
-        leaves.setAttribute('position', { x: 0, y: trunkHeight + leavesHeight / 2, z: 0 });
-        leaves.setAttribute('radius-bottom', 0.35 + Math.random() * 0.2);
-        leaves.setAttribute('radius-top', 0);
-        leaves.setAttribute('height', leavesHeight);
-        const green = Math.floor(80 + Math.random() * 90);
-        leaves.setAttribute('material', `color: rgb(40, ${green}, 40); roughness: 0.9`);
-        group.appendChild(leaves);
+        for (let s = 0; s < segments; s += 1) {
+          const lit = Math.random() < 0.55;
+          const box = document.createElement('a-box');
+          box.setAttribute('position', { x: 0, y: segHeight / 2 + s * segHeight, z: 0 });
+          box.setAttribute('width', 0.18 + Math.random() * 0.1);
+          box.setAttribute('height', segHeight * 0.92);
+          box.setAttribute('depth', 0.18 + Math.random() * 0.1);
+          box.setAttribute('material', lit
+            ? `color: ${tint.color}; emissive: ${tint.emissive}; emissiveIntensity: 0.6; opacity: 0.85; transparent: true; metalness: 0.4; roughness: 0.3`
+            : `color: #0a0a14; emissive: #111122; emissiveIntensity: 0.15; opacity: 0.7; transparent: true; metalness: 0.5; roughness: 0.4`);
+          group.appendChild(box);
+        }
 
-        const rotY = Math.floor(Math.random() * 4) * 90;
-        group.setAttribute('rotation', `0 ${rotY} 0`);
+        platform.appendChild(group);
+      } else if (typeRoll < 0.65) {
+        // Floating packet — small glowing geometric shape
+        const packet = document.createElement('a-octahedron');
+        packet.setAttribute('position', { x, y: 0.5 + Math.random() * 1.2, z });
+        const scale = 0.12 + Math.random() * 0.18;
+        packet.setAttribute('scale', `${scale} ${scale} ${scale}`);
+        packet.setAttribute('radius', 1);
+        packet.setAttribute('material', `color: ${tint.color}; emissive: ${tint.emissive}; emissiveIntensity: 0.8; opacity: 0.9; transparent: true; metalness: 0.3; roughness: 0.2`);
+        packet.setAttribute('animation', `property: rotation; to: ${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}; dur: ${3000 + Math.random() * 4000}; easing: linear; loop: true`);
+        platform.appendChild(packet);
+      } else if (typeRoll < 0.85) {
+        // Bit cluster — cubes arranged like a tiny binary fragment
+        const group = document.createElement('a-entity');
+        group.setAttribute('position', { x, y: 0.15 + Math.random() * 0.3, z });
+        const bits = 3 + Math.floor(Math.random() * 4);
+        for (let b = 0; b < bits; b += 1) {
+          const cube = document.createElement('a-box');
+          const bx = (Math.random() - 0.5) * 0.5;
+          const by = (Math.random() - 0.5) * 0.3;
+          const bz = (Math.random() - 0.5) * 0.5;
+          cube.setAttribute('position', { x: bx, y: by, z: bz });
+          const s = 0.06 + Math.random() * 0.08;
+          cube.setAttribute('scale', `${s} ${s} ${s}`);
+          const lit = Math.random() < 0.6;
+          cube.setAttribute('material', lit
+            ? `color: ${tint.color}; emissive: ${tint.emissive}; emissiveIntensity: 0.9; metalness: 0.1; roughness: 0.2`
+            : `color: #050510; emissive: #0a0a18; emissiveIntensity: 0.1; metalness: 0.1; roughness: 0.8`);
+          group.appendChild(cube);
+        }
         platform.appendChild(group);
       } else {
-        const rock = document.createElement('a-dodecahedron');
-        rock.setAttribute('position', { x, y: 0.12 + Math.random() * 0.12, z });
-        const scale = 0.15 + Math.random() * 0.25;
-        rock.setAttribute('scale', `${scale} ${scale * 0.7} ${scale}`);
-        rock.setAttribute('radius', 1);
-        const shade = Math.floor(60 + Math.random() * 60);
-        rock.setAttribute('material', `color: rgb(${shade}, ${shade}, ${shade}); roughness: 0.95; metalness: 0.1`);
-        rock.setAttribute('rotation', `${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}`);
-        platform.appendChild(rock);
+        // Data stream — thin vertical beam
+        const beam = document.createElement('a-cylinder');
+        beam.setAttribute('position', { x, y: 0.5 + Math.random() * 0.8, z });
+        beam.setAttribute('radius', 0.02 + Math.random() * 0.03);
+        beam.setAttribute('height', 1.0 + Math.random() * 1.5);
+        beam.setAttribute('material', `color: ${tint.color}; emissive: ${tint.emissive}; emissiveIntensity: 0.7; opacity: 0.6; transparent: true; metalness: 0.2; roughness: 0.3`);
+        platform.appendChild(beam);
       }
     }
   },
