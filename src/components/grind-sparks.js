@@ -40,6 +40,13 @@ AFRAME.registerComponent('grind-sparks', {
     window.addEventListener('rail-land', this.onRailLand);
     window.addEventListener('obstacle-hit', this.onObstacleHit);
     window.addEventListener('collectible-collected', this.onCollectibleCollected);
+    window.addEventListener('game-reset', () => {
+      this.speed = 0;
+      this.sparkTier = 0;
+      this.boomAge = 1000;
+      this.impactAge = 1000;
+      this.spawnTimer = 0;
+    });
 
     for (let index = 0; index < this.data.count; index += 1) {
       const spark = document.createElement('a-sphere');

@@ -2,6 +2,10 @@ import AFRAME from 'aframe';
 
 let score = 0;
 
+window.addEventListener('game-reset', () => {
+  score = 0;
+});
+
 AFRAME.registerComponent('collectible', {
   schema: {
     points: { type: 'number', default: 1 },

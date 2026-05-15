@@ -26,10 +26,13 @@ AFRAME.registerComponent('platform-generator', {
   init() {
     this.platforms = [];
     this.nextPlatformStartZ = this.data.startZ;
+    this.initialStartZ = this.data.startZ;
 
     for (let index = 0; index < this.data.platformCount; index += 1) {
       this.createPlatform();
     }
+
+    window.addEventListener('game-reset', () => this.resetPlatforms());
   },
 
   tick() {
@@ -149,6 +152,20 @@ AFRAME.registerComponent('platform-generator', {
       collectibleGroup.appendChild(collectible);
 
       platform.appendChild(collectibleGroup);
+    }
+  },
+
+  resetPlatforms() {
+    for (const platform of this.platforms) {
+      if (platform.el && platform.el.parentNode) {
+        platform.el.remove();
+      }
+    }
+    this.platforms = [];
+    this.nextPlatformStartZ = this.initialStartZ;
+
+    for (let index = 0; index < this.data.platformCount; index += 1) {
+      this.createPlatform();
     }
   },
 

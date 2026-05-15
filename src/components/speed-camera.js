@@ -39,6 +39,12 @@ AFRAME.registerComponent('speed-camera', {
 
     window.addEventListener('game-speed', this.onSpeed);
     window.addEventListener('obstacle-hit', this.onObstacleHit);
+    window.addEventListener('game-reset', () => {
+      this.speed = this.data.minSpeed;
+      this.speedTier = 0;
+      this.boomShakeAge = this.data.boomShakeDuration;
+      this.obstacleShakeAge = this.data.obstacleShakeDuration;
+    });
   },
 
   remove() {

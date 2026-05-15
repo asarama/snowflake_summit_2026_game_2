@@ -36,20 +36,32 @@ AFRAME.registerComponent('player-controls', {
     this.activeObstacle = null;
     this.isPlaying = false;
 
-    this.onKeyDown = (event) => this.keys.add(event.code);
-    this.onKeyUp = (event) => this.keys.delete(event.code);
+    this.initialPosition = this.el.object3D.position.clone();
+    this.initialRail = this.currentRail;
+
+    this.onKeyDown = (event) => {
+      if (!this.isPlaying) return;
+      this.keys.add(event.code);
+    };
+    this.onKeyUp = (event) => {
+      if (!this.isPlaying) return;
+      this.keys.delete(event.code);
+    };
 
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
-    window.addEventListener('game-start', () => { 
-      this.isPlaying = true; 
+    window.addEventListener('game-start', () => {
+      this.isPlaying = true;
       this.keys.clear();
     });
-    window.addEventListener('game-end', () => { 
-      this.isPlaying = false; 
-      this.speed = 0; 
+    window.addEventListener('game-end', () => {
+      this.isPlaying = false;
+      this.speed = 0;
       this.currentMaxSpeed = this.data.maxSpeed;
       this.keys.clear();
+    });
+    window.addEventListener('game-reset', () => {
+      this.resetPlayer();
     });
     window.addEventListener('collectible-collected', () => {
       this.speed = Math.min(this.speed + this.data.collectibleBoost, this.data.collectibleMaxSpeed);
@@ -61,6 +73,25 @@ AFRAME.registerComponent('player-controls', {
   remove() {
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
+  },
+
+  resetPlayer() {
+    this.isPlaying = false;
+    this.speed = this.data.startSpeed;
+    this.currentMaxSpeed = this.data.maxSpeed;
+    this.currentRail = this.initialRail;
+    this.targetRail = this.initialRail;
+    this.switchElapsed = 0;
+    this.switchStartX = this.getRailX(this.currentRail);
+    this.switchTargetX = this.switchStartX;
+    this.activeObstacle = null;
+    this.wasLeftPressed = false;
+    this.wasRightPressed = false;
+    this.keys.clear();
+
+    const position = this.el.object3D.position;
+    position.copy(this.initialPosition);
+    window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed, maxSpeed: this.currentMaxSpeed } }));
   },
 
   tick(_time, delta) {
