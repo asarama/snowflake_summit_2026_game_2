@@ -4,16 +4,28 @@ const { THREE } = AFRAME;
 
 AFRAME.registerComponent('grind-sparks', {
   schema: {
-    count: { type: 'number', default: 18 },
+    count: { type: 'number', default: 32 },
     spread: { type: 'number', default: 0.45 },
     lifetime: { type: 'number', default: 420 },
-    railY: { type: 'number', default: 0.05 }
+    railY: { type: 'number', default: 0.05 },
+    mediumSpeed: { type: 'number', default: 5 },
+    highSpeed: { type: 'number', default: 9 }
   },
 
   init() {
     this.sparks = [];
     this.spawnCursor = 0;
     this.spawnTimer = 0;
+    this.speed = 0;
+    this.sparkTier = 0;
+    this.boomAge = 1000;
+    this.boomLifetime = 520;
+
+    this.onSpeed = (event) => {
+      this.speed = event.detail.speed;
+    };
+
+    window.addEventListener('game-speed', this.onSpeed);
 
     for (let index = 0; index < this.data.count; index += 1) {
       const spark = document.createElement('a-sphere');
@@ -28,14 +40,36 @@ AFRAME.registerComponent('grind-sparks', {
         velocity: new THREE.Vector3()
       });
     }
+
+    this.boom = document.createElement('a-torus');
+    this.boom.setAttribute('position', '0 0.55 0.15');
+    this.boom.setAttribute('rotation', '90 0 0');
+    this.boom.setAttribute('radius', '0.08');
+    this.boom.setAttribute('radius-tubular', '0.018');
+    this.boom.setAttribute('material', 'color: #ffffff; emissive: #8be9fd; emissiveIntensity: 1.6; transparent: true; opacity: 0.85');
+    this.boom.object3D.visible = false;
+    this.el.appendChild(this.boom);
+  },
+
+  remove() {
+    window.removeEventListener('game-speed', this.onSpeed);
   },
 
   tick(_time, delta) {
+    const nextTier = this.getSparkTier();
+
+    if (nextTier > this.sparkTier) {
+      this.triggerSonicBoom();
+    }
+
+    this.sparkTier = nextTier;
     this.spawnTimer += delta;
 
-    while (this.spawnTimer > 28) {
-      this.spawnTimer -= 28;
-      this.spawnSpark();
+    const spawnInterval = this.getSpawnInterval();
+
+    while (this.spawnTimer > spawnInterval) {
+      this.spawnTimer -= spawnInterval;
+      this.spawnSpark(nextTier);
     }
 
     this.sparks.forEach((spark) => {
@@ -56,11 +90,38 @@ AFRAME.registerComponent('grind-sparks', {
       spark.entity.object3D.scale.setScalar(Math.max(scale, 0.08));
       spark.entity.object3D.visible = progress < 1;
     });
+
+    this.updateSonicBoom(delta);
   },
 
-  spawnSpark() {
+  getSparkTier() {
+    if (this.speed >= this.data.highSpeed) {
+      return 2;
+    }
+
+    if (this.speed >= this.data.mediumSpeed) {
+      return 1;
+    }
+
+    return 0;
+  },
+
+  getSpawnInterval() {
+    if (this.sparkTier === 2) {
+      return 14;
+    }
+
+    if (this.sparkTier === 1) {
+      return 28;
+    }
+
+    return 90;
+  },
+
+  spawnSpark(tier) {
     const spark = this.sparks[this.spawnCursor];
     const side = Math.random() > 0.5 ? 1 : -1;
+    const force = 0.7 + tier * 0.45;
 
     spark.age = 0;
     spark.entity.object3D.visible = true;
@@ -71,11 +132,34 @@ AFRAME.registerComponent('grind-sparks', {
     );
     spark.entity.object3D.scale.setScalar(1);
     spark.velocity.set(
-      side * (0.9 + Math.random() * 1.5),
-      0.8 + Math.random() * 1.1,
-      1.8 + Math.random() * 2.2
+      side * (0.9 + Math.random() * 1.5) * force,
+      (0.8 + Math.random() * 1.1) * force,
+      (1.8 + Math.random() * 2.2) * force
     );
 
     this.spawnCursor = (this.spawnCursor + 1) % this.sparks.length;
+  },
+
+  triggerSonicBoom() {
+    this.boomAge = 0;
+    this.boom.object3D.visible = true;
+    this.boom.object3D.scale.setScalar(0.2);
+  },
+
+  updateSonicBoom(delta) {
+    if (this.boomAge >= this.boomLifetime) {
+      this.boom.object3D.visible = false;
+      return;
+    }
+
+    this.boomAge += delta;
+
+    const progress = THREE.MathUtils.clamp(this.boomAge / this.boomLifetime, 0, 1);
+    const scale = THREE.MathUtils.lerp(0.2, 6, THREE.MathUtils.smoothstep(progress, 0, 1));
+    const opacity = 1 - progress;
+
+    this.boom.object3D.scale.setScalar(scale);
+    this.boom.setAttribute('material', 'opacity', opacity);
+    this.boom.object3D.visible = progress < 1;
   }
 });
