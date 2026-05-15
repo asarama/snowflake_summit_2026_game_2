@@ -13,6 +13,7 @@ app.innerHTML = `
       <h1>Snowflake Summit Game Prototype</h1>
       <p>Grind the rails with W to accelerate, S to brake, A for the left rail, and D for the right rail.</p>
       <p class="score">Score: <span id="score">0</span></p>
+      <p class="score">Speed: <span id="speed">5.0</span></p>
     </section>
   </main>
 
@@ -58,4 +59,9 @@ app.innerHTML = `
 window.addEventListener('game-score', (event) => {
   const score = document.querySelector('#score');
   score.textContent = event.detail.score;
+});
+
+window.addEventListener('game-speed', (event) => {
+  const speed = document.querySelector('#speed');
+  speed.textContent = event.detail.speed.toFixed(1);
 });

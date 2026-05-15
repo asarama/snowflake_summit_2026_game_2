@@ -53,6 +53,7 @@ AFRAME.registerComponent('player-controls', {
     }
 
     this.speed = THREE.MathUtils.clamp(this.speed, this.data.minSpeed, this.data.maxSpeed);
+    window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));
 
     if (leftPressed && !this.wasLeftPressed) {
       this.switchRail(0);
