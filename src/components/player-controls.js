@@ -239,6 +239,7 @@ AFRAME.registerComponent('player-controls', {
 
       this.activeObstacle = obstacle;
       this.speed = this.data.obstacleKnockbackSpeed;
+      this.currentMaxSpeed = this.data.maxSpeed;
       position.z = obstaclePosition.z + radiusZ + this.data.obstacleBounceDistance;
       window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed, maxSpeed: this.currentMaxSpeed } }));
       window.dispatchEvent(new CustomEvent('obstacle-hit', {
