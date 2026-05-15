@@ -51,9 +51,29 @@ app.innerHTML = `
   </div>
 
   <div class="overlay hidden" id="game-over-screen">
-    <div class="overlay-content">
+    <div class="overlay-content game-over-content">
       <h2>Game Over</h2>
-      <p>Final Score: <span id="final-score">0</span></p>
+      <p>Final Score: <span id="final-score">0</span>m</p>
+      <p>Max Speed: <span id="final-max-speed">0</span></p>
+      <div class="save-score-form" id="save-score-form">
+        <input type="email" id="email-input" placeholder="Enter your email" class="email-input" />
+        <button class="start-button" id="save-score-button">Save Score</button>
+      </div>
+      <p class="personal-best hidden" id="personal-best"></p>
+      <div class="leaderboard">
+        <h3>Leaderboard</h3>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Email</th>
+              <th>Score</th>
+              <th>Max Speed</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
       <button class="start-button" id="restart-button">Play Again</button>
     </div>
   </div>

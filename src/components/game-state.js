@@ -1,4 +1,5 @@
 import { gameStateStore } from '../game-state-store.js';
+import { saveScore, getTopScores, getPersonalBest } from '../db.js';
 
 AFRAME.registerComponent('game-state', {
   schema: {
@@ -9,6 +10,7 @@ AFRAME.registerComponent('game-state', {
     this.state = 'start';
     this.timeRemaining = this.data.gameDuration;
     this.score = 0;
+    this.maxSpeed = 0;
 
     this.startScreen = document.getElementById('start-screen');
     this.countdownScreen = document.getElementById('countdown-screen');
@@ -17,22 +19,39 @@ AFRAME.registerComponent('game-state', {
     this.countdownDisplay = document.getElementById('countdown');
     this.timerDisplay = document.getElementById('timer');
     this.finalScoreDisplay = document.getElementById('final-score');
+    this.finalMaxSpeedDisplay = document.getElementById('final-max-speed');
     this.unlockMessageDisplay = document.getElementById('unlock-message');
     this.unlockCountdownDisplay = document.getElementById('unlock-countdown');
+    this.leaderboardBody = document.getElementById('leaderboard-body');
+    this.saveScoreForm = document.getElementById('save-score-form');
+    this.emailInput = document.getElementById('email-input');
+    this.saveScoreButton = document.getElementById('save-score-button');
+    this.personalBestDisplay = document.getElementById('personal-best');
 
     this.startButton = document.getElementById('start-button');
     this.restartButton = document.getElementById('restart-button');
 
     this.startButton?.addEventListener('click', () => this.startGame());
     this.restartButton?.addEventListener('click', () => this.restartGame());
+    this.saveScoreButton?.addEventListener('click', () => this.handleSaveScore());
+    this.emailInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') this.handleSaveScore();
+    });
 
     window.addEventListener('game-score', (event) => {
       this.score = event.detail.score;
     });
 
+    window.addEventListener('game-speed', (event) => {
+      const speed = event.detail.speed;
+      if (speed > this.maxSpeed) {
+        this.maxSpeed = speed;
+      }
+    });
+
     window.addEventListener('rail-unlock-collected', (event) => {
       const tier = event.detail.tier;
-      const message = tier === 0 ? 'DuckDB engine unlocked!' : 'Firebolt engine unlocked!';
+      const message = tier === 0 ? 'DuckDB query path unlocked! Press left or right to switch engines.' : 'Firebolt engine unlocked!';
       this.showUnlockMessage(message);
     });
   },
@@ -89,7 +108,7 @@ AFRAME.registerComponent('game-state', {
     }, 1000);
   },
 
-  endGame() {
+  async endGame() {
     this.state = 'gameover';
     gameStateStore.isPlaying = false;
     clearInterval(this.gameInterval);
@@ -98,6 +117,17 @@ AFRAME.registerComponent('game-state', {
     this.gameOverScreen.classList.remove('hidden');
     this.gameOverScreen.classList.add('active');
     this.finalScoreDisplay.textContent = this.score;
+    this.finalMaxSpeedDisplay.textContent = this.maxSpeed.toFixed(1);
+
+    if (this.saveScoreForm) {
+      this.saveScoreForm.classList.remove('hidden');
+    }
+    if (this.personalBestDisplay) {
+      this.personalBestDisplay.classList.add('hidden');
+      this.personalBestDisplay.textContent = '';
+    }
+
+    await this.renderLeaderboard();
 
     window.dispatchEvent(new CustomEvent('game-end'));
   },
@@ -107,6 +137,7 @@ AFRAME.registerComponent('game-state', {
     gameStateStore.reset();
     this.timeRemaining = this.data.gameDuration;
     this.score = 0;
+    this.maxSpeed = 0;
     this.timerDisplay.textContent = this.data.gameDuration;
 
     this.gameOverScreen.classList.remove('active');
@@ -117,12 +148,71 @@ AFRAME.registerComponent('game-state', {
     window.dispatchEvent(new CustomEvent('game-reset'));
   },
 
+  async handleSaveScore() {
+    const email = this.emailInput?.value.trim();
+    if (!email || !email.includes('@')) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    this.saveScoreButton.disabled = true;
+    this.saveScoreButton.textContent = 'Saving...';
+
+    try {
+      await saveScore(email, this.score, this.maxSpeed);
+      if (this.saveScoreForm) {
+        this.saveScoreForm.classList.add('hidden');
+      }
+      const personalBest = await getPersonalBest(email);
+      if (personalBest && this.personalBestDisplay) {
+        this.personalBestDisplay.textContent = `Personal Best: ${personalBest.bestScore}m / ${personalBest.bestMaxSpeed} max speed`;
+        this.personalBestDisplay.classList.remove('hidden');
+      }
+      await this.renderLeaderboard();
+    } catch (err) {
+      console.error('Failed to save score:', err);
+      alert('Failed to save score. See console for details.');
+    } finally {
+      this.saveScoreButton.disabled = false;
+      this.saveScoreButton.textContent = 'Save Score';
+    }
+  },
+
+  async renderLeaderboard() {
+    if (!this.leaderboardBody) return;
+
+    try {
+      const scores = await getTopScores(10);
+      this.leaderboardBody.innerHTML = '';
+
+      if (scores.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="4" class="leaderboard-empty">No scores yet. Be the first!</td>`;
+        this.leaderboardBody.appendChild(row);
+        return;
+      }
+
+      scores.forEach((entry, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${entry.email}</td>
+          <td>${entry.score}</td>
+          <td>${entry.maxSpeed}</td>
+        `;
+        this.leaderboardBody.appendChild(row);
+      });
+    } catch (err) {
+      console.error('Failed to load leaderboard:', err);
+    }
+  },
+
   showUnlockMessage(message) {
     gameStateStore.isPlaying = false;
     clearInterval(this.gameInterval);
     clearInterval(this.unlockCountdownInterval);
 
-    this.unlockMessageDisplay.textContent = message + ' New query path added!';
+    this.unlockMessageDisplay.textContent = message;
     let countdown = 3;
     this.unlockCountdownDisplay.textContent = countdown;
     this.unlockMessageScreen.classList.remove('hidden');
