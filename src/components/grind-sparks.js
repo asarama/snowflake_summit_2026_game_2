@@ -34,10 +34,12 @@ AFRAME.registerComponent('grind-sparks', {
 
     this.onRailLand = (event) => this.triggerRailImpact(event.detail);
     this.onObstacleHit = (event) => this.triggerObstacleImpact(event.detail);
+    this.onCollectibleCollected = (event) => this.triggerCollectibleImpact(event.detail);
 
     window.addEventListener('game-speed', this.onSpeed);
     window.addEventListener('rail-land', this.onRailLand);
     window.addEventListener('obstacle-hit', this.onObstacleHit);
+    window.addEventListener('collectible-collected', this.onCollectibleCollected);
 
     for (let index = 0; index < this.data.count; index += 1) {
       const spark = document.createElement('a-sphere');
@@ -76,6 +78,7 @@ AFRAME.registerComponent('grind-sparks', {
     window.removeEventListener('game-speed', this.onSpeed);
     window.removeEventListener('rail-land', this.onRailLand);
     window.removeEventListener('obstacle-hit', this.onObstacleHit);
+    window.removeEventListener('collectible-collected', this.onCollectibleCollected);
     this.sparkRoot.remove();
   },
 
@@ -205,6 +208,30 @@ AFRAME.registerComponent('grind-sparks', {
     this.spawnCursor = (this.spawnCursor + 1) % this.sparks.length;
   },
 
+  spawnCollectibleSpark(position, tier) {
+    const spark = this.sparks[this.spawnCursor];
+    const angle = Math.random() * Math.PI * 2;
+    const force = 1.5 + tier * 0.3;
+    const horizontalForce = 2.0 + Math.random() * 1.8;
+
+    spark.age = 0;
+    spark.entity.object3D.visible = true;
+    spark.entity.setAttribute('material', 'color: #50fa7b; emissive: #00d26a; emissiveIntensity: 1.8; shader: standard');
+    spark.entity.object3D.position.set(
+      position.x + (Math.random() - 0.5) * 0.25,
+      1.2 + (Math.random() - 0.5) * 0.2,
+      position.z + (Math.random() - 0.5) * 0.25
+    );
+    spark.entity.object3D.scale.setScalar(1.2);
+    spark.velocity.set(
+      Math.cos(angle) * horizontalForce * force,
+      (0.8 + Math.random() * 1.0) * force,
+      Math.sin(angle) * horizontalForce * force
+    );
+
+    this.spawnCursor = (this.spawnCursor + 1) % this.sparks.length;
+  },
+
   getRailPosition() {
     const position = this.el.object3D.position;
 
@@ -272,6 +299,24 @@ AFRAME.registerComponent('grind-sparks', {
 
     for (let index = 0; index < burstCount; index += 1) {
       this.spawnImpactSpark(position, tier);
+    }
+  },
+
+  triggerCollectibleImpact(detail) {
+    const tier = Math.max(this.getSparkTier(), 0);
+    const position = {
+      x: detail.x,
+      z: detail.z
+    };
+    const burstCount = 12;
+
+    this.impactAge = 0;
+    this.impact.object3D.visible = true;
+    this.impact.object3D.position.set(position.x, 1.2, position.z);
+    this.impact.object3D.scale.setScalar(0.3);
+
+    for (let index = 0; index < burstCount; index += 1) {
+      this.spawnCollectibleSpark(position, tier);
     }
   },
 

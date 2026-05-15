@@ -121,18 +121,31 @@ AFRAME.registerComponent('platform-generator', {
 
   addCollectibles(platform, startZ) {
     for (const collectibleConfig of COLLECTIBLES) {
+      const collectibleGroup = document.createElement('a-entity');
+      const collisionBox = document.createElement('a-box');
       const collectible = document.createElement('a-octahedron');
 
-      collectible.classList.add('collectible');
-      collectible.setAttribute('collectible', 'points: 1');
-      collectible.setAttribute('radius', 0.35);
-      collectible.setAttribute('position', {
+      collectibleGroup.classList.add('collectible');
+      collectibleGroup.setAttribute('position', {
         x: this.getRailX(collectibleConfig.rail),
         y: 1.2,
         z: startZ + collectibleConfig.z
       });
+
+      collisionBox.setAttribute('collectible', '');
+      collisionBox.setAttribute('position', '0 0 0');
+      collisionBox.setAttribute('width', 0.8);
+      collisionBox.setAttribute('height', 0.8);
+      collisionBox.setAttribute('depth', 0.8);
+      collisionBox.setAttribute('visible', 'false');
+      collectibleGroup.appendChild(collisionBox);
+
+      collectible.setAttribute('radius', 0.35);
+      collectible.setAttribute('position', '0 0 0');
       collectible.setAttribute('material', 'color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.1; roughness: 0.25');
-      platform.appendChild(collectible);
+      collectibleGroup.appendChild(collectible);
+
+      platform.appendChild(collectibleGroup);
     }
   },
 

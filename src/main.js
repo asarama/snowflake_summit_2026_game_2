@@ -17,7 +17,7 @@ app.innerHTML = `
       <h1>Snowflake Summit Game Prototype</h1>
       <p>Grind the rails with W to accelerate, S to brake, A to hop left, and D to hop right.</p>
       <p class="score">Score: <span id="score">0</span></p>
-      <p class="score">Speed: <span id="speed">5.0</span></p>
+      <p class="score">Speed: <span id="speed">5.0</span> / Max: <span id="max-speed">30</span></p>
     </section>
   </main>
 
@@ -77,5 +77,7 @@ window.addEventListener('game-score', (event) => {
 
 window.addEventListener('game-speed', (event) => {
   const speed = document.querySelector('#speed');
+  const maxSpeed = document.querySelector('#max-speed');
   speed.textContent = event.detail.speed.toFixed(1);
+  maxSpeed.textContent = event.detail.maxSpeed?.toFixed(1) ?? event.detail.maxSpeed;
 });

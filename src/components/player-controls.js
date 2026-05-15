@@ -25,6 +25,7 @@ AFRAME.registerComponent('player-controls', {
   init() {
     this.keys = new Set();
     this.speed = this.data.startSpeed;
+    this.currentMaxSpeed = this.data.maxSpeed;
     this.currentRail = Math.floor(this.data.railCount / 2);
     this.targetRail = this.currentRail;
     this.switchElapsed = 0;
@@ -41,10 +42,11 @@ AFRAME.registerComponent('player-controls', {
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
     window.addEventListener('game-start', () => { this.isPlaying = true; });
-    window.addEventListener('game-end', () => { this.isPlaying = false; this.speed = 0; });
+    window.addEventListener('game-end', () => { this.isPlaying = false; this.speed = 0; this.currentMaxSpeed = this.data.maxSpeed; });
     window.addEventListener('collectible-collected', () => {
       this.speed = Math.min(this.speed + this.data.collectibleBoost, this.data.collectibleMaxSpeed);
-      window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));
+      this.currentMaxSpeed = Math.min(this.currentMaxSpeed + this.data.collectibleBoost, this.data.collectibleMaxSpeed);
+      window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed, maxSpeed: this.currentMaxSpeed } }));
     });
   },
 
@@ -65,6 +67,7 @@ AFRAME.registerComponent('player-controls', {
     const acceleratePressed = this.keys.has('KeyW') || this.keys.has('ArrowUp');
     const brakePressed = this.keys.has('KeyS') || this.keys.has('ArrowDown');
     const previousZ = position.z;
+    const previousSpeed = this.speed;
 
     if (acceleratePressed) {
       this.speed += this.data.acceleration * seconds;
@@ -81,9 +84,14 @@ AFRAME.registerComponent('player-controls', {
     this.speed = THREE.MathUtils.clamp(
       this.speed,
       this.data.obstacleKnockbackSpeed,
-      this.data.maxSpeed
+      this.currentMaxSpeed
     );
-    window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));
+
+    if (this.speed < previousSpeed && this.currentMaxSpeed > this.data.maxSpeed) {
+      this.currentMaxSpeed = this.data.maxSpeed;
+    }
+
+    window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed, maxSpeed: this.currentMaxSpeed } }));
 
     if (leftPressed && !this.wasLeftPressed) {
       this.switchRail(this.targetRail - 1);
@@ -99,6 +107,7 @@ AFRAME.registerComponent('player-controls', {
 
     this.updateRailSwitch(delta);
     this.checkObstacleCollisions(previousZ);
+    this.checkCollectibleCollisions(previousZ);
   },
 
   getRailX(rail) {
@@ -192,7 +201,7 @@ AFRAME.registerComponent('player-controls', {
       this.activeObstacle = obstacle;
       this.speed = this.data.obstacleKnockbackSpeed;
       position.z = obstaclePosition.z + radiusZ + this.data.obstacleBounceDistance;
-      window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));
+      window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed, maxSpeed: this.currentMaxSpeed } }));
       window.dispatchEvent(new CustomEvent('obstacle-hit', {
         detail: {
           x: obstaclePosition.x,
@@ -200,6 +209,38 @@ AFRAME.registerComponent('player-controls', {
           speed: impactSpeed
         }
       }));
+      break;
+    }
+  },
+
+  checkCollectibleCollisions(previousZ) {
+    const position = this.el.object3D.position;
+
+    if (!this.el.sceneEl) {
+      return;
+    }
+
+    const collectibles = this.el.sceneEl.querySelectorAll('.collectible');
+
+    for (const collectible of collectibles) {
+      const collectiblePosition = collectible.object3D.position;
+      const collectibleData = collectible.components.collectible?.data;
+      const radiusX = collectibleData?.radiusX ?? 0.5;
+      const radiusZ = collectibleData?.radiusZ ?? 0.5;
+      const isSameRail = Math.abs(position.x - collectiblePosition.x) <= radiusX;
+      const wasInFront = previousZ >= collectiblePosition.z - radiusZ;
+      const isPastBack = position.z <= collectiblePosition.z + radiusZ;
+      const isOverlappingZ = Math.abs(position.z - collectiblePosition.z) <= radiusZ;
+      const isColliding = isSameRail && ((wasInFront && isPastBack) || isOverlappingZ);
+
+      if (!isColliding) {
+        continue;
+      }
+
+      window.dispatchEvent(new CustomEvent('collectible-collected', {
+        detail: { x: collectiblePosition.x, y: collectiblePosition.y, z: collectiblePosition.z }
+      }));
+      collectible.parentNode.parentNode.removeChild(collectible.parentNode);
       break;
     }
   }

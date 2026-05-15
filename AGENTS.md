@@ -48,10 +48,12 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 
 - **`src/components/player-controls.js`**
   - Owns player speed, braking/acceleration, continuous forward rail movement, and rail switching.
+  - Tracks `currentMaxSpeed` which starts at regular `maxSpeed` and increases with collectibles up to `collectibleMaxSpeed`.
+  - Resets `currentMaxSpeed` to regular `maxSpeed` when speed drops (braking, drag, obstacle hit).
   - Checks static `.obstacle` entities with swept Z collision and sets speed to the obstacle knockback value on hit.
   - Emits `obstacle-hit` and moves the player slightly backward after obstacle collisions.
   - Tracks only the currently active obstacle so static obstacles can repeatedly block the player after they are clear.
-  - Emits `game-speed` events every tick with the current speed.
+  - Emits `game-speed` events every tick with current speed and max speed.
   - Emits `rail-land` when a rail-switch hop finishes.
   - Uses rig `position.y` for the rail-switch hop arc.
   - Uses `SPEED.start`, `SPEED.min`, and `SPEED.max` as defaults.
@@ -64,6 +66,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Creates the sonic boom visual when crossing upward into a higher speed tier.
   - Listens for `rail-land` to create a short landing impact burst and ring.
   - Listens for `obstacle-hit` to create a larger obstacle impact burst.
+  - Listens for `collectible-collected` to create green spark burst.
   - Uses `SPEED.mediumTier` and `SPEED.highTier` as defaults.
 
 - **`src/components/speed-camera.js`**
