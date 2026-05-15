@@ -45,10 +45,12 @@ AFRAME.registerComponent('platform-generator', {
     if (playerZ < oldestPlatform.endZ && !oldestPlatform.pendingRemoval) {
       oldestPlatform.pendingRemoval = true;
       setTimeout(() => {
-        oldestPlatform.el.remove();
+        if (oldestPlatform.el && oldestPlatform.el.parentNode) {
+          oldestPlatform.el.remove();
+        }
         this.platforms.shift();
         this.createPlatform();
-      }, 1000);
+      }, 100);
     }
   },
 
