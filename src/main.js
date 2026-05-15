@@ -15,7 +15,7 @@ app.innerHTML = `
     <section class="panel">
       <p class="eyebrow">A-Frame Playground</p>
       <h1>Snowflake Summit Game Prototype</h1>
-      <p>Grind the rails with W to accelerate, S to brake, A to hop left, and D to hop right.</p>
+      <p>Grind the rails with A to hop left and D to hop right.</p>
       <p class="score">Score: <span id="score">0</span></p>
       <p class="score">Speed: <span id="speed">5.0</span> / Max: <span id="max-speed">30</span></p>
     </section>

@@ -105,22 +105,10 @@ AFRAME.registerComponent('player-controls', {
     const position = this.el.object3D.position;
     const leftPressed = this.keys.has('KeyA') || this.keys.has('ArrowLeft');
     const rightPressed = this.keys.has('KeyD') || this.keys.has('ArrowRight');
-    const acceleratePressed = this.keys.has('KeyW') || this.keys.has('ArrowUp');
-    const brakePressed = this.keys.has('KeyS') || this.keys.has('ArrowDown');
     const previousZ = position.z;
     const previousSpeed = this.speed;
 
-    if (acceleratePressed) {
-      this.speed += this.data.acceleration * seconds;
-    } else if (brakePressed) {
-      this.speed -= this.data.brake * seconds;
-    } else {
-      this.speed = THREE.MathUtils.damp(this.speed, 0, this.data.drag, seconds);
-
-      if (Math.abs(this.speed) < 0.02) {
-        this.speed = 0;
-      }
-    }
+    this.speed += this.data.acceleration * seconds;
 
     this.speed = THREE.MathUtils.clamp(
       this.speed,

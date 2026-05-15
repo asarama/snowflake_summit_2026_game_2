@@ -6,8 +6,6 @@ This is a simple A-Frame/Vite game prototype for a rail-grinding character.
 
 The player starts on the center of three parallel rails and moves forward automatically. The current gameplay loop is:
 
-- Press `W` to accelerate.
-- Press `S` to brake.
 - Press `A` to hop one rail to the left.
 - Press `D` to hop one rail to the right.
 - Switching rails creates a hop animation.
@@ -48,10 +46,10 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Components that care about speed thresholds should import from here instead of duplicating constants.
 
 - **`src/components/player-controls.js`**
-  - Owns player speed, braking/acceleration, continuous forward rail movement, rail switching, and score (distance traveled).
+  - Owns player speed, auto-acceleration, continuous forward rail movement, rail switching, and score (distance traveled).
   - Tracks `totalDistance` and emits `game-score` every tick with `Math.floor(totalDistance)`.
   - Tracks `currentMaxSpeed` which starts at regular `maxSpeed` and increases with collectibles up to `collectibleMaxSpeed`.
-  - Resets `currentMaxSpeed` to regular `maxSpeed` when speed drops (braking, drag, obstacle hit).
+  - Resets `currentMaxSpeed` to regular `maxSpeed` when speed drops (obstacle hit).
   - Checks static `.obstacle` entities with swept Z collision and sets speed to the obstacle knockback value on hit.
   - On obstacle collision, resets `currentMaxSpeed` back to the default `maxSpeed`.
   - Emits `obstacle-hit` and moves the player slightly backward after obstacle collisions.
