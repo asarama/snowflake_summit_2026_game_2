@@ -86,6 +86,7 @@ AFRAME.registerComponent('platform-generator', {
     platform.setAttribute('position', '0 0 0');
     this.addGround(platform, centerZ);
     this.addRails(platform, centerZ);
+    this.addFoliage(platform, centerZ);
     this.addObstacles(platform, startZ, spawns);
     this.addCollectibles(platform, startZ, spawns);
     this.el.appendChild(platform);
@@ -135,6 +136,57 @@ AFRAME.registerComponent('platform-generator', {
     railEntity.setAttribute('depth', this.data.platformLength);
     railEntity.setAttribute('material', `color: ${colors.color}; emissive: ${colors.emissive}; emissiveIntensity: ${colors.emissiveIntensity}; metalness: 0.65; roughness: 0.2`);
     platform.appendChild(railEntity);
+  },
+
+  addFoliage(platform, centerZ) {
+    const halfLength = this.data.platformLength / 2;
+    const count = Math.floor(Math.random() * 5) + 4;
+
+    for (let i = 0; i < count; i += 1) {
+      const z = centerZ + (Math.random() - 0.5) * halfLength * 1.8;
+      const side = Math.random() < 0.5 ? -1 : 1;
+      const xMin = this.data.railSpacing * 1.6;
+      const xMax = 7.2;
+      const x = side * (xMin + Math.random() * (xMax - xMin));
+      const type = Math.random() < 0.6 ? 'tree' : 'rock';
+
+      if (type === 'tree') {
+        const group = document.createElement('a-entity');
+        group.setAttribute('position', { x, y: 0, z });
+
+        const trunk = document.createElement('a-cylinder');
+        const trunkHeight = 0.6 + Math.random() * 0.6;
+        trunk.setAttribute('position', { x: 0, y: trunkHeight / 2, z: 0 });
+        trunk.setAttribute('radius', 0.08 + Math.random() * 0.04);
+        trunk.setAttribute('height', trunkHeight);
+        trunk.setAttribute('material', 'color: #3e2723; roughness: 0.95');
+        group.appendChild(trunk);
+
+        const leaves = document.createElement('a-cone');
+        const leavesHeight = 0.7 + Math.random() * 0.5;
+        leaves.setAttribute('position', { x: 0, y: trunkHeight + leavesHeight / 2, z: 0 });
+        leaves.setAttribute('radius-bottom', 0.35 + Math.random() * 0.2);
+        leaves.setAttribute('radius-top', 0);
+        leaves.setAttribute('height', leavesHeight);
+        const green = Math.floor(80 + Math.random() * 90);
+        leaves.setAttribute('material', `color: rgb(40, ${green}, 40); roughness: 0.9`);
+        group.appendChild(leaves);
+
+        const rotY = Math.floor(Math.random() * 4) * 90;
+        group.setAttribute('rotation', `0 ${rotY} 0`);
+        platform.appendChild(group);
+      } else {
+        const rock = document.createElement('a-dodecahedron');
+        rock.setAttribute('position', { x, y: 0.12 + Math.random() * 0.12, z });
+        const scale = 0.15 + Math.random() * 0.25;
+        rock.setAttribute('scale', `${scale} ${scale * 0.7} ${scale}`);
+        rock.setAttribute('radius', 1);
+        const shade = Math.floor(60 + Math.random() * 60);
+        rock.setAttribute('material', `color: rgb(${shade}, ${shade}, ${shade}); roughness: 0.95; metalness: 0.1`);
+        rock.setAttribute('rotation', `${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}`);
+        platform.appendChild(rock);
+      }
+    }
   },
 
   generateSpawns(activeRails) {
