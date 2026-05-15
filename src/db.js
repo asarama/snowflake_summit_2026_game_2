@@ -84,15 +84,12 @@ async function persistScores() {
     ORDER BY created_at DESC
   `);
 
-  const rows = [];
-  for (let i = 0; i < result.numRows; i++) {
-    rows.push({
-      email: result.get(i, 'email'),
-      score: result.get(i, 'score'),
-      maxSpeed: result.get(i, 'max_speed'),
-      createdAt: result.get(i, 'created_at')
-    });
-  }
+  const rows = result.toArray().map(row => ({
+    email: row.email,
+    score: row.score,
+    maxSpeed: row.max_speed,
+    createdAt: row.created_at
+  }));
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
 }
@@ -115,15 +112,11 @@ export async function getTopScores(limit = 10) {
     LIMIT ${Math.max(1, Math.floor(limit))}
   `);
 
-  const rows = [];
-  for (let i = 0; i < result.numRows; i++) {
-    rows.push({
-      email: result.get(i, 'email'),
-      score: result.get(i, 'score'),
-      maxSpeed: Number(result.get(i, 'max_speed')).toFixed(1)
-    });
-  }
-  return rows;
+  return result.toArray().map(row => ({
+    email: row.email,
+    score: row.score,
+    maxSpeed: Number(row.max_speed).toFixed(1)
+  }));
 }
 
 export async function getPersonalBest(email) {
@@ -134,9 +127,11 @@ export async function getPersonalBest(email) {
     WHERE email = '${escapeSql(email)}'
   `);
 
-  if (result.numRows === 0) return null;
+  const rows = result.toArray();
+  if (rows.length === 0) return null;
+  const row = rows[0];
   return {
-    bestScore: result.get(0, 'best_score'),
-    bestMaxSpeed: Number(result.get(0, 'best_max_speed') || 0).toFixed(1)
+    bestScore: row.best_score,
+    bestMaxSpeed: Number(row.best_max_speed || 0).toFixed(1)
   };
 }

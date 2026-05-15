@@ -14,9 +14,8 @@ const app = document.querySelector('#app');
 app.innerHTML = `
   <main class="hud">
     <section class="panel">
-      <p class="eyebrow">A-Frame Playground</p>
-      <h1>Snowflake Summit Game Prototype</h1>
-      <p>Grind the rails with A to hop left and D to hop right. Press W to jump over obstacles.</p>
+      <h1>Query Surfer</h1>
+      <p>You are a stream of queries flying through the data lake. Collect crystals to increase your speed and avoid obstacles! Press w or up-arrow to jump. Make it far enough and you'll unlock new engines.</p>
       <p class="score">Score: <span id="score">0</span></p>
       <p class="score">Speed: <span id="speed">5.0</span> / Max: <span id="max-speed">30</span></p>
     </section>

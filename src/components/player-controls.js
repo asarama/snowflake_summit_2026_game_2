@@ -23,6 +23,7 @@ AFRAME.registerComponent('player-controls', {
     obstacleBounceDistance: { type: 'number', default: 1.25 },
     obstacleKnockbackSpeed: { type: 'number', default: -8 },
     collectibleBoost: { type: 'number', default: 1.5 },
+    collectibleBoostVariance: { type: 'number', default: 1.0 },
     collectibleMaxSpeed: { type: 'number', default: 100 }
   },
 
@@ -66,8 +67,10 @@ AFRAME.registerComponent('player-controls', {
       this.resetPlayer();
     });
     window.addEventListener('collectible-collected', () => {
-      this.speed = Math.min(this.speed + this.data.collectibleBoost, this.data.collectibleMaxSpeed);
-      this.currentMaxSpeed = Math.min(this.currentMaxSpeed + this.data.collectibleBoost, this.data.collectibleMaxSpeed);
+      // Add random boost within variance
+      const boost = this.data.collectibleBoost + (Math.random() * this.data.collectibleBoostVariance);
+      this.speed = Math.min(this.speed + boost, this.data.collectibleMaxSpeed);
+      this.currentMaxSpeed = Math.min(this.currentMaxSpeed + boost, this.data.collectibleMaxSpeed);
       window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed, maxSpeed: this.currentMaxSpeed } }));
     });
   },
