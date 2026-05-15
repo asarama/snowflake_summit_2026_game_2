@@ -122,7 +122,7 @@ AFRAME.registerComponent('game-state', {
     clearInterval(this.gameInterval);
     clearInterval(this.unlockCountdownInterval);
 
-    this.unlockMessageDisplay.textContent = message + 'New query path added!';
+    this.unlockMessageDisplay.textContent = message + ' New query path added!';
     let countdown = 3;
     this.unlockCountdownDisplay.textContent = countdown;
     this.unlockMessageScreen.classList.remove('hidden');
