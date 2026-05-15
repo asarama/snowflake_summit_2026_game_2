@@ -8,7 +8,9 @@ The player starts on the center of three parallel rails and moves forward automa
 
 - Press `A` to hop one rail to the left.
 - Press `D` to hop one rail to the right.
+- Press `W` (or `ArrowUp`) to jump over obstacles.
 - Switching rails creates a hop animation.
+- Jumping creates a higher hop arc and prevents obstacle collisions while airborne.
 - Landing after a rail switch creates a short spark impact burst.
 - Static obstacles block rails, set player speed to a negative knockback value, reset max speed to default, bounce the player backward, create sparks, and shake the camera on collision.
 - Grinding creates speed-dependent sparks and stops generating new grind sparks below `0.5` speed.
@@ -50,7 +52,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Components that care about speed thresholds should import from here instead of duplicating constants.
 
 - **`src/components/player-controls.js`**
-  - Owns player speed, auto-acceleration, continuous forward rail movement, rail switching, and score (distance traveled).
+  - Owns player speed, auto-acceleration, continuous forward rail movement, rail switching, jumping, and score (distance traveled).
   - Reads `gameStateStore.isPlaying` to gate its `tick()` and key handlers.
   - Tracks `totalDistance` and emits `game-score` every tick with `Math.floor(totalDistance)`.
   - Tracks `currentMaxSpeed` which starts at regular `maxSpeed` and increases with collectibles up to `collectibleMaxSpeed`.
@@ -60,9 +62,9 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Emits `obstacle-hit` and moves the player slightly backward after obstacle collisions.
   - Tracks only the currently active obstacle so static obstacles can repeatedly block the player after they are clear.
   - Emits `game-speed` events every tick with current speed and max speed.
-  - Emits `rail-land` when a rail-switch hop finishes.
+  - Emits `rail-land` when a rail-switch hop finishes or a jump lands.
   - Uses `getWorldPosition()` for collectible collision detection because collectibles are nested in groups.
-  - Uses rig `position.y` for the rail-switch hop arc.
+  - Uses rig `position.y` as the maximum of the rail-switch hop arc and the jump arc.
   - Uses `SPEED.start`, `SPEED.min`, and `SPEED.max` as defaults.
 
 - **`src/components/grind-sparks.js`**

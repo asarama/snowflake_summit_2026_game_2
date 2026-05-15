@@ -16,9 +16,11 @@ AFRAME.registerComponent('player-controls', {
     railSpacing: { type: 'number', default: 2.4 },
     switchDuration: { type: 'number', default: 280 },
     hopHeight: { type: 'number', default: 0.8 },
+    jumpDuration: { type: 'number', default: 550 },
+    jumpHeight: { type: 'number', default: 1.8 },
     obstacleSelector: { type: 'string', default: '.obstacle' },
     obstacleBounceDistance: { type: 'number', default: 1.25 },
-    obstacleKnockbackSpeed: { type: 'number', default: -2 },
+    obstacleKnockbackSpeed: { type: 'number', default: -8 },
     collectibleBoost: { type: 'number', default: 8 },
     collectibleMaxSpeed: { type: 'number', default: 100 }
   },
@@ -34,6 +36,9 @@ AFRAME.registerComponent('player-controls', {
     this.switchTargetX = this.switchStartX;
     this.wasLeftPressed = false;
     this.wasRightPressed = false;
+    this.wasJumpPressed = false;
+    this.isJumping = false;
+    this.jumpElapsed = 0;
     this.activeObstacle = null;
     this.totalDistance = 0;
 
@@ -83,6 +88,9 @@ AFRAME.registerComponent('player-controls', {
     this.activeObstacle = null;
     this.wasLeftPressed = false;
     this.wasRightPressed = false;
+    this.wasJumpPressed = false;
+    this.isJumping = false;
+    this.jumpElapsed = 0;
     this.keys.clear();
 
     const position = this.el.object3D.position;
@@ -99,6 +107,7 @@ AFRAME.registerComponent('player-controls', {
     const position = this.el.object3D.position;
     const leftPressed = this.keys.has('KeyA') || this.keys.has('ArrowLeft');
     const rightPressed = this.keys.has('KeyD') || this.keys.has('ArrowRight');
+    const jumpPressed = this.keys.has('KeyW') || this.keys.has('ArrowUp');
     const previousZ = position.z;
     const previousSpeed = this.speed;
 
@@ -124,8 +133,13 @@ AFRAME.registerComponent('player-controls', {
       this.switchRail(this.targetRail + 1);
     }
 
+    if (jumpPressed && !this.wasJumpPressed) {
+      this.startJump();
+    }
+
     this.wasLeftPressed = leftPressed;
     this.wasRightPressed = rightPressed;
+    this.wasJumpPressed = jumpPressed;
     position.z -= this.speed * seconds;
     this.totalDistance += Math.abs(this.speed) * seconds;
 
@@ -133,7 +147,9 @@ AFRAME.registerComponent('player-controls', {
       detail: { score: Math.floor(this.totalDistance) }
     }));
 
-    this.updateRailSwitch(delta);
+    const switchY = this.updateRailSwitch(delta);
+    const jumpY = this.updateJump(delta);
+    position.y = Math.max(switchY, jumpY);
     this.checkObstacleCollisions(previousZ);
     this.checkCollectibleCollisions(previousZ);
   },
@@ -162,8 +178,7 @@ AFRAME.registerComponent('player-controls', {
     const position = this.el.object3D.position;
 
     if (position.x === this.switchTargetX) {
-      position.y = 0;
-      return;
+      return 0;
     }
 
     this.switchElapsed += delta;
@@ -173,12 +188,10 @@ AFRAME.registerComponent('player-controls', {
     const hop = Math.sin(progress * Math.PI) * this.data.hopHeight;
 
     position.x = THREE.MathUtils.lerp(this.switchStartX, this.switchTargetX, eased);
-    position.y = hop;
 
     if (progress === 1) {
       this.currentRail = this.targetRail;
       position.x = this.switchTargetX;
-      position.y = 0;
       window.dispatchEvent(new CustomEvent('rail-land', {
         detail: {
           rail: this.currentRail,
@@ -188,6 +201,42 @@ AFRAME.registerComponent('player-controls', {
         }
       }));
     }
+
+    return hop;
+  },
+
+  startJump() {
+    if (this.isJumping) {
+      return;
+    }
+    this.isJumping = true;
+    this.jumpElapsed = 0;
+  },
+
+  updateJump(delta) {
+    if (!this.isJumping) {
+      return 0;
+    }
+
+    this.jumpElapsed += delta;
+
+    const progress = THREE.MathUtils.clamp(this.jumpElapsed / this.data.jumpDuration, 0, 1);
+    const hop = Math.sin(progress * Math.PI) * this.data.jumpHeight;
+
+    if (progress === 1) {
+      this.isJumping = false;
+      this.jumpElapsed = 0;
+      window.dispatchEvent(new CustomEvent('rail-land', {
+        detail: {
+          rail: this.currentRail,
+          x: this.el.object3D.position.x,
+          z: this.el.object3D.position.z,
+          speed: this.speed
+        }
+      }));
+    }
+
+    return hop;
   },
 
   checkObstacleCollisions(previousZ) {
