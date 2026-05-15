@@ -11,6 +11,7 @@ AFRAME.registerComponent('player-controls', {
     acceleration: { type: 'number', default: 7 },
     brake: { type: 'number', default: 10 },
     drag: { type: 'number', default: 1.2 },
+    railCount: { type: 'int', default: 3 },
     railSpacing: { type: 'number', default: 2.4 },
     switchDuration: { type: 'number', default: 280 },
     hopHeight: { type: 'number', default: 0.8 }
@@ -19,8 +20,8 @@ AFRAME.registerComponent('player-controls', {
   init() {
     this.keys = new Set();
     this.speed = this.data.startSpeed;
-    this.currentRail = 1;
-    this.targetRail = 1;
+    this.currentRail = Math.floor(this.data.railCount / 2);
+    this.targetRail = this.currentRail;
     this.switchElapsed = 0;
     this.switchStartX = this.getRailX(this.currentRail);
     this.switchTargetX = this.switchStartX;
@@ -57,11 +58,11 @@ AFRAME.registerComponent('player-controls', {
     window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));
 
     if (leftPressed && !this.wasLeftPressed) {
-      this.switchRail(0);
+      this.switchRail(this.targetRail - 1);
     }
 
     if (rightPressed && !this.wasRightPressed) {
-      this.switchRail(1);
+      this.switchRail(this.targetRail + 1);
     }
 
     this.wasLeftPressed = leftPressed;
@@ -76,19 +77,23 @@ AFRAME.registerComponent('player-controls', {
   },
 
   getRailX(rail) {
-    return rail === 0 ? -this.data.railSpacing / 2 : this.data.railSpacing / 2;
+    const centerRail = (this.data.railCount - 1) / 2;
+
+    return (rail - centerRail) * this.data.railSpacing;
   },
 
   switchRail(nextRail) {
-    if (nextRail === this.targetRail) {
+    const clampedRail = THREE.MathUtils.clamp(nextRail, 0, this.data.railCount - 1);
+
+    if (clampedRail === this.targetRail) {
       return;
     }
 
     this.currentRail = this.targetRail;
-    this.targetRail = nextRail;
+    this.targetRail = clampedRail;
     this.switchElapsed = 0;
     this.switchStartX = this.el.object3D.position.x;
-    this.switchTargetX = this.getRailX(nextRail);
+    this.switchTargetX = this.getRailX(clampedRail);
   },
 
   updateRailSwitch(delta) {

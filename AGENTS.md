@@ -4,12 +4,12 @@
 
 This is a simple A-Frame/Vite game prototype for a rail-grinding character.
 
-The player starts on one of two parallel rails and moves forward automatically. The current gameplay loop is:
+The player starts on the center of three parallel rails and moves forward automatically. The current gameplay loop is:
 
 - Press `W` to accelerate.
 - Press `S` to brake.
-- Press `A` to switch to the left rail.
-- Press `D` to switch to the right rail.
+- Press `A` to hop one rail to the left.
+- Press `D` to hop one rail to the right.
 - Switching rails creates a hop animation.
 - Grinding creates speed-dependent sparks.
 - Crossing speed tiers creates a sonic boom effect.
@@ -74,8 +74,8 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 
 - The player rig is the entity with `id="rig"` in `src/main.js`.
 - The camera is a child of the rig so it naturally follows the player.
-- The rails are simple long `a-box` entities positioned at `x = -1.2` and `x = 1.2`.
-- `player-controls` uses a `railSpacing` default/attribute to determine left and right rail X positions.
+- The rails are simple long `a-box` entities positioned at `x = -2.4`, `x = 0`, and `x = 2.4`.
+- `player-controls` uses `railCount` and `railSpacing` defaults/attributes to determine rail X positions.
 - The game uses browser `CustomEvent`s for lightweight communication:
   - `game-speed` updates HUD, sparks, and camera.
   - `game-score` updates HUD score.
