@@ -9,6 +9,7 @@ AFRAME.registerComponent('grind-sparks', {
     spread: { type: 'number', default: 0.45 },
     lifetime: { type: 'number', default: 420 },
     railY: { type: 'number', default: 0.05 },
+    minSparkSpeed: { type: 'number', default: 0.5 },
     mediumSpeed: { type: 'number', default: SPEED.mediumTier },
     highSpeed: { type: 'number', default: SPEED.highTier }
   },
@@ -86,7 +87,7 @@ AFRAME.registerComponent('grind-sparks', {
     }
 
     this.sparkTier = nextTier;
-    if (this.isOnRail()) {
+    if (this.isOnRail() && nextTier >= 0) {
       this.spawnTimer += delta;
 
       const spawnInterval = this.getSpawnInterval();
@@ -123,11 +124,17 @@ AFRAME.registerComponent('grind-sparks', {
   },
 
   getSparkTier() {
-    if (this.speed >= this.data.highSpeed) {
+    const speed = Math.abs(this.speed);
+
+    if (speed < this.data.minSparkSpeed) {
+      return -1;
+    }
+
+    if (speed >= this.data.highSpeed) {
       return 2;
     }
 
-    if (this.speed >= this.data.mediumSpeed) {
+    if (speed >= this.data.mediumSpeed) {
       return 1;
     }
 
@@ -233,7 +240,7 @@ AFRAME.registerComponent('grind-sparks', {
   },
 
   triggerRailImpact(detail) {
-    const tier = this.getSparkTier();
+    const tier = Math.max(this.getSparkTier(), 0);
     const position = {
       x: detail.x,
       z: detail.z
@@ -251,7 +258,7 @@ AFRAME.registerComponent('grind-sparks', {
   },
 
   triggerObstacleImpact(detail) {
-    const tier = this.getSparkTier();
+    const tier = Math.max(this.getSparkTier(), 0);
     const position = {
       x: detail.x,
       z: detail.z + 0.45

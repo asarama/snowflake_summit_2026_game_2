@@ -57,13 +57,17 @@ AFRAME.registerComponent('player-controls', {
       this.speed += this.data.acceleration * seconds;
     } else if (brakePressed) {
       this.speed -= this.data.brake * seconds;
-    } else if (this.speed > 0) {
-      this.speed -= this.data.drag * seconds;
+    } else {
+      this.speed = THREE.MathUtils.damp(this.speed, 0, this.data.drag, seconds);
+
+      if (Math.abs(this.speed) < 0.02) {
+        this.speed = 0;
+      }
     }
 
     this.speed = THREE.MathUtils.clamp(
       this.speed,
-      this.speed <= 0 ? this.data.obstacleKnockbackSpeed : this.data.minSpeed,
+      this.data.obstacleKnockbackSpeed,
       this.data.maxSpeed
     );
     window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));

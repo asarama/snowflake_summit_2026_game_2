@@ -13,7 +13,7 @@ The player starts on the center of three parallel rails and moves forward automa
 - Switching rails creates a hop animation.
 - Landing after a rail switch creates a short spark impact burst.
 - Static obstacles block rails, set player speed to a negative knockback value, bounce the player backward, create sparks, and shake the camera on collision.
-- Grinding creates speed-dependent sparks.
+- Grinding creates speed-dependent sparks and stops generating new grind sparks below `0.5` speed.
 - Crossing speed tiers creates a sonic boom effect.
 - Camera position, FOV, and shake respond to speed.
 
@@ -55,7 +55,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - **`src/components/grind-sparks.js`**
   - Creates and recycles spark entities.
   - Spark entities are parented to a scene-level `#spark-root`, not the player rig, so existing sparks stay in world/rail space during player hops.
-  - Only spawns new sparks when the player is on the rail.
+  - Only spawns new grind sparks when the player is on the rail and moving at `0.5` speed or faster.
   - Uses speed tiers for spark density/color.
   - Creates the sonic boom visual when crossing upward into a higher speed tier.
   - Listens for `rail-land` to create a short landing impact burst and ring.
