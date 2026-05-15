@@ -1,5 +1,6 @@
 import AFRAME from 'aframe';
 import { SPEED } from '../config/speed.js';
+import { gameStateStore } from '../game-state-store.js';
 
 const { THREE } = AFRAME;
 
@@ -34,29 +35,23 @@ AFRAME.registerComponent('player-controls', {
     this.wasLeftPressed = false;
     this.wasRightPressed = false;
     this.activeObstacle = null;
-    this.isPlaying = false;
     this.totalDistance = 0;
 
     this.initialPosition = this.el.object3D.position.clone();
     this.initialRail = this.currentRail;
 
     this.onKeyDown = (event) => {
-      if (!this.isPlaying) return;
+      if (!gameStateStore.isPlaying) return;
       this.keys.add(event.code);
     };
     this.onKeyUp = (event) => {
-      if (!this.isPlaying) return;
+      if (!gameStateStore.isPlaying) return;
       this.keys.delete(event.code);
     };
 
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
-    window.addEventListener('game-start', () => {
-      this.isPlaying = true;
-      this.keys.clear();
-    });
     window.addEventListener('game-end', () => {
-      this.isPlaying = false;
       this.speed = 0;
       this.currentMaxSpeed = this.data.maxSpeed;
       this.keys.clear();
@@ -77,7 +72,6 @@ AFRAME.registerComponent('player-controls', {
   },
 
   resetPlayer() {
-    this.isPlaying = false;
     this.speed = this.data.startSpeed;
     this.currentMaxSpeed = this.data.maxSpeed;
     this.totalDistance = 0;
@@ -97,7 +91,7 @@ AFRAME.registerComponent('player-controls', {
   },
 
   tick(_time, delta) {
-    if (!this.isPlaying) {
+    if (!gameStateStore.isPlaying) {
       return;
     }
 

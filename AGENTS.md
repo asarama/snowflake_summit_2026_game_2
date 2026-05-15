@@ -33,6 +33,10 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 
 ## Key files
 
+- **`src/game-state-store.js`**
+  - Centralized shared module exporting `gameStateStore` with a single `isPlaying` boolean getter/setter.
+  - `game-state.js` is the sole writer; all gameplay components read from it to gate their `tick()` behavior.
+
 - **`src/main.js`**
   - Builds the A-Frame scene via `app.innerHTML`.
   - Imports all custom components.
@@ -47,6 +51,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 
 - **`src/components/player-controls.js`**
   - Owns player speed, auto-acceleration, continuous forward rail movement, rail switching, and score (distance traveled).
+  - Reads `gameStateStore.isPlaying` to gate its `tick()` and key handlers.
   - Tracks `totalDistance` and emits `game-score` every tick with `Math.floor(totalDistance)`.
   - Tracks `currentMaxSpeed` which starts at regular `maxSpeed` and increases with collectibles up to `collectibleMaxSpeed`.
   - Resets `currentMaxSpeed` to regular `maxSpeed` when speed drops (obstacle hit).
@@ -63,6 +68,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - **`src/components/grind-sparks.js`**
   - Creates and recycles spark entities.
   - Spark entities are parented to a scene-level `#spark-root`, not the player rig, so existing sparks stay in world/rail space during player hops.
+  - Reads `gameStateStore.isPlaying` to gate its `tick()`.
   - Only spawns new grind sparks when the player is on the rail and moving at `0.5` speed or faster.
   - Uses speed tiers for spark density/color.
   - Creates the sonic boom visual when crossing upward into a higher speed tier.
@@ -72,6 +78,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Uses `SPEED.mediumTier` and `SPEED.highTier` as defaults.
 
 - **`src/components/speed-camera.js`**
+  - Reads `gameStateStore.isPlaying` to gate its `tick()`.
   - Listens to `game-speed`.
   - Moves the camera back/up and widens FOV as speed increases.
   - Adds a camera shake burst when crossing upward into a higher speed tier.
@@ -92,10 +99,12 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - **`src/components/platform-generator.js`**
   - Generates platform segments made of ground, three rails, obstacles, and collectibles.
   - Maintains a rolling set of platform entities ahead of the player.
+  - Reads `gameStateStore.isPlaying` to gate its `tick()`.
   - Removes the oldest platform after the player passes its end and appends a new platform farther forward.
 
 - **`src/components/game-state.js`**
   - Manages game flow: start screen, 3-second countdown, 60-second timer, and game over screen.
+  - Is the **sole writer** to `gameStateStore.isPlaying`, setting it to `true` on begin and `false` on end/reset.
   - Emits `game-start`, `game-end`, and `game-reset` events.
   - Tracks score and displays final score on game over.
 

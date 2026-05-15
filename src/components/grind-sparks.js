@@ -1,5 +1,6 @@
 import AFRAME from 'aframe';
 import { SPEED } from '../config/speed.js';
+import { gameStateStore } from '../game-state-store.js';
 
 const { THREE } = AFRAME;
 
@@ -90,6 +91,8 @@ AFRAME.registerComponent('grind-sparks', {
   },
 
   tick(_time, delta) {
+    if (!gameStateStore.isPlaying) return;
+
     const nextTier = this.getSparkTier();
 
     if (nextTier > this.sparkTier) {

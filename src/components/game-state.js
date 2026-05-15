@@ -1,3 +1,5 @@
+import { gameStateStore } from '../game-state-store.js';
+
 AFRAME.registerComponent('game-state', {
   schema: {
     gameDuration: { type: 'number', default: 60 }
@@ -61,6 +63,7 @@ AFRAME.registerComponent('game-state', {
     this.countdownScreen.classList.remove('active');
     this.countdownScreen.classList.add('hidden');
     this.timerDisplay.classList.remove('hidden');
+    gameStateStore.isPlaying = true;
 
     window.dispatchEvent(new CustomEvent('game-start'));
 
@@ -76,6 +79,7 @@ AFRAME.registerComponent('game-state', {
 
   endGame() {
     this.state = 'gameover';
+    gameStateStore.isPlaying = false;
     clearInterval(this.gameInterval);
 
     this.timerDisplay.classList.add('hidden');
@@ -88,6 +92,7 @@ AFRAME.registerComponent('game-state', {
 
   restartGame() {
     this.state = 'start';
+    gameStateStore.isPlaying = false;
     this.timeRemaining = this.data.gameDuration;
     this.score = 0;
     this.timerDisplay.textContent = this.data.gameDuration;

@@ -1,5 +1,6 @@
 import AFRAME from 'aframe';
 import { SPEED } from '../config/speed.js';
+import { gameStateStore } from '../game-state-store.js';
 
 const { THREE } = AFRAME;
 
@@ -53,6 +54,8 @@ AFRAME.registerComponent('speed-camera', {
   },
 
   tick(_time, delta) {
+    if (!gameStateStore.isPlaying) return;
+
     const nextTier = this.getSpeedTier();
 
     if (nextTier > this.speedTier) {

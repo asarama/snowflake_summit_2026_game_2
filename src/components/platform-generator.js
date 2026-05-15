@@ -1,4 +1,5 @@
 import AFRAME from 'aframe';
+import { gameStateStore } from '../game-state-store.js';
 
 const PLATFORM_LENGTH = 100;
 const RAIL_SPACING = 2.4;
@@ -36,6 +37,8 @@ AFRAME.registerComponent('platform-generator', {
   },
 
   tick() {
+    if (!gameStateStore.isPlaying) return;
+
     const player = this.data.player;
 
     if (!player || this.platforms.length === 0) {
