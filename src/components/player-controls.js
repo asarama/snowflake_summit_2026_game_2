@@ -1,12 +1,13 @@
 import AFRAME from 'aframe';
+import { SPEED } from '../config/speed.js';
 
 const { THREE } = AFRAME;
 
 AFRAME.registerComponent('player-controls', {
   schema: {
-    startSpeed: { type: 'number', default: 5 },
-    minSpeed: { type: 'number', default: 1.5 },
-    maxSpeed: { type: 'number', default: 13 },
+    startSpeed: { type: 'number', default: SPEED.start },
+    minSpeed: { type: 'number', default: SPEED.min },
+    maxSpeed: { type: 'number', default: SPEED.max },
     acceleration: { type: 'number', default: 7 },
     brake: { type: 'number', default: 10 },
     drag: { type: 'number', default: 1.2 },

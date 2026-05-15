@@ -1,19 +1,20 @@
 import AFRAME from 'aframe';
+import { SPEED } from '../config/speed.js';
 
 const { THREE } = AFRAME;
 
 AFRAME.registerComponent('speed-camera', {
   schema: {
-    minSpeed: { type: 'number', default: 1.5 },
-    maxSpeed: { type: 'number', default: 13 },
+    minSpeed: { type: 'number', default: SPEED.min },
+    maxSpeed: { type: 'number', default: SPEED.max },
     baseY: { type: 'number', default: 3.4 },
     maxY: { type: 'number', default: 4.2 },
     baseZ: { type: 'number', default: 3.5 },
     maxZ: { type: 'number', default: 6.8 },
     baseFov: { type: 'number', default: 80 },
     maxFov: { type: 'number', default: 105 },
-    mediumSpeed: { type: 'number', default: 5 },
-    highSpeed: { type: 'number', default: 9 },
+    mediumSpeed: { type: 'number', default: SPEED.mediumTier },
+    highSpeed: { type: 'number', default: SPEED.highTier },
     boomShakeDuration: { type: 'number', default: 420 },
     boomShakeStrength: { type: 'number', default: 0.18 },
     topSpeedShakeStrength: { type: 'number', default: 0.035 },

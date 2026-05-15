@@ -1,4 +1,5 @@
 import AFRAME from 'aframe';
+import { SPEED } from '../config/speed.js';
 
 const { THREE } = AFRAME;
 
@@ -8,8 +9,8 @@ AFRAME.registerComponent('grind-sparks', {
     spread: { type: 'number', default: 0.45 },
     lifetime: { type: 'number', default: 420 },
     railY: { type: 'number', default: 0.05 },
-    mediumSpeed: { type: 'number', default: 5 },
-    highSpeed: { type: 'number', default: 9 }
+    mediumSpeed: { type: 'number', default: SPEED.mediumTier },
+    highSpeed: { type: 'number', default: SPEED.highTier }
   },
 
   init() {
