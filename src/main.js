@@ -1,6 +1,7 @@
 import 'aframe';
 import './styles.css';
 import './components/player-controls.js';
+import './components/grind-sparks.js';
 import './components/collectible.js';
 import './components/spawner.js';
 
@@ -26,7 +27,7 @@ app.innerHTML = `
       <a-mixin id="crystalMaterial" material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.1; roughness: 0.25"></a-mixin>
     </a-assets>
 
-    <a-entity id="rig" position="1.2 0 14" player-controls="startSpeed: 5; railSpacing: 2.4">
+    <a-entity id="rig" position="1.2 0 14" player-controls="startSpeed: 5; railSpacing: 2.4" grind-sparks>
       <a-box position="0 0.75 0" width="0.7" height="1.1" depth="0.7" material="color: #ffb86c; metalness: 0.15; roughness: 0.45"></a-box>
       <a-cone position="0 1.55 0" radius-bottom="0.32" radius-top="0.18" height="0.45" material="color: #f8f8f2; metalness: 0.1; roughness: 0.35"></a-cone>
       <a-camera position="0 4.4 6.5" rotation="-28 0 0" wasd-controls-enabled="false" look-controls="enabled: false">
