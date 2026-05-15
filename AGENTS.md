@@ -12,6 +12,7 @@ The player starts on the center of three parallel rails and moves forward automa
 - Press `D` to hop one rail to the right.
 - Switching rails creates a hop animation.
 - Landing after a rail switch creates a short spark impact burst.
+- Static obstacles block rails, set player speed to a negative knockback value, bounce the player backward, create sparks, and shake the camera on collision.
 - Grinding creates speed-dependent sparks.
 - Crossing speed tiers creates a sonic boom effect.
 - Camera position, FOV, and shake respond to speed.
@@ -43,6 +44,8 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 
 - **`src/components/player-controls.js`**
   - Owns player speed, braking/acceleration, forward rail movement, wrapping, and rail switching.
+  - Checks static `.obstacle` entities with swept Z collision and sets speed to the obstacle knockback value on hit.
+  - Emits `obstacle-hit` and moves the player slightly backward after obstacle collisions.
   - Emits `game-speed` events every tick with the current speed.
   - Emits `rail-land` when a rail-switch hop finishes.
   - Uses rig `position.y` for the rail-switch hop arc.
@@ -55,12 +58,14 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Uses speed tiers for spark density/color.
   - Creates the sonic boom visual when crossing upward into a higher speed tier.
   - Listens for `rail-land` to create a short landing impact burst and ring.
+  - Listens for `obstacle-hit` to create a larger obstacle impact burst.
   - Uses `SPEED.mediumTier` and `SPEED.highTier` as defaults.
 
 - **`src/components/speed-camera.js`**
   - Listens to `game-speed`.
   - Moves the camera back/up and widens FOV as speed increases.
   - Adds a camera shake burst when crossing upward into a higher speed tier.
+  - Adds a camera shake burst on `obstacle-hit`.
   - Adds subtle camera shake at 90%+ of top speed.
   - Uses shared speed min/max/tier defaults from `src/config/speed.js`.
 
@@ -70,6 +75,10 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - **`src/components/spawner.js`**
   - Spawns collectibles into the scene.
 
+- **`src/components/obstacle.js`**
+  - Marks static rail blockers with the `.obstacle` class.
+  - Defines simple X/Z collision radii used by `player-controls`.
+
 - **`src/styles.css`**
   - HUD and page styling.
 
@@ -78,11 +87,13 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - The player rig is the entity with `id="rig"` in `src/main.js`.
 - The camera is a child of the rig so it naturally follows the player.
 - The rails are simple long `a-box` entities positioned at `x = -2.4`, `x = 0`, and `x = 2.4`.
+- Static obstacles are simple `a-box` entities with the `obstacle` component.
 - `player-controls` uses `railCount` and `railSpacing` defaults/attributes to determine rail X positions.
 - The game uses browser `CustomEvent`s for lightweight communication:
   - `game-speed` updates HUD, sparks, and camera.
   - `game-score` updates HUD score.
   - `rail-land` triggers landing impact visuals after rail switches.
+  - `obstacle-hit` triggers obstacle impact sparks and camera shake.
 
 ## Development guidance
 

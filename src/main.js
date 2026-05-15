@@ -5,6 +5,7 @@ import './components/grind-sparks.js';
 import './components/speed-camera.js';
 import './components/collectible.js';
 import './components/spawner.js';
+import './components/obstacle.js';
 
 const app = document.querySelector('#app');
 
@@ -45,6 +46,9 @@ app.innerHTML = `
     <a-box position="0 0 -15" width="0.16" height="0.16" depth="74" material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.65; roughness: 0.2"></a-box>
     <a-box position="2.4 0 -15" width="0.16" height="0.16" depth="74" material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.65; roughness: 0.2"></a-box>
     <a-box position="0 -0.12 -15" width="5.6" height="0.08" depth="74" material="color: #14365c; roughness: 0.85"></a-box>
+    <a-box obstacle position="-2.4 0.45 -8" width="0.9" height="0.9" depth="0.8" material="color: #ff5555; emissive: #7f1d1d; emissiveIntensity: 0.45; metalness: 0.2; roughness: 0.35"></a-box>
+    <a-box obstacle position="0 0.45 -20" width="0.9" height="0.9" depth="0.8" material="color: #ff5555; emissive: #7f1d1d; emissiveIntensity: 0.45; metalness: 0.2; roughness: 0.35"></a-box>
+    <a-box obstacle position="2.4 0.45 -32" width="0.9" height="0.9" depth="0.8" material="color: #ff5555; emissive: #7f1d1d; emissiveIntensity: 0.45; metalness: 0.2; roughness: 0.35"></a-box>
     <a-entity position="0 0 -15">
       <a-box position="0 -0.4 -28" width="5.7" height="0.35" depth="0.18" material="color: #1f6feb; metalness: 0.2; roughness: 0.35"></a-box>
       <a-box position="0 -0.4 -14" width="5.7" height="0.35" depth="0.18" material="color: #1f6feb; metalness: 0.2; roughness: 0.35"></a-box>

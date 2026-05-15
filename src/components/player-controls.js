@@ -14,7 +14,10 @@ AFRAME.registerComponent('player-controls', {
     railCount: { type: 'int', default: 3 },
     railSpacing: { type: 'number', default: 2.4 },
     switchDuration: { type: 'number', default: 280 },
-    hopHeight: { type: 'number', default: 0.8 }
+    hopHeight: { type: 'number', default: 0.8 },
+    obstacleSelector: { type: 'string', default: '.obstacle' },
+    obstacleBounceDistance: { type: 'number', default: 1.25 },
+    obstacleKnockbackSpeed: { type: 'number', default: -2 }
   },
 
   init() {
@@ -27,6 +30,7 @@ AFRAME.registerComponent('player-controls', {
     this.switchTargetX = this.switchStartX;
     this.wasLeftPressed = false;
     this.wasRightPressed = false;
+    this.hitObstacles = new WeakSet();
 
     this.onKeyDown = (event) => this.keys.add(event.code);
     this.onKeyUp = (event) => this.keys.delete(event.code);
@@ -45,16 +49,23 @@ AFRAME.registerComponent('player-controls', {
     const position = this.el.object3D.position;
     const leftPressed = this.keys.has('KeyA') || this.keys.has('ArrowLeft');
     const rightPressed = this.keys.has('KeyD') || this.keys.has('ArrowRight');
+    const acceleratePressed = this.keys.has('KeyW') || this.keys.has('ArrowUp');
+    const brakePressed = this.keys.has('KeyS') || this.keys.has('ArrowDown');
+    const previousZ = position.z;
 
-    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) {
+    if (acceleratePressed) {
       this.speed += this.data.acceleration * seconds;
-    } else if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) {
+    } else if (brakePressed) {
       this.speed -= this.data.brake * seconds;
-    } else {
+    } else if (this.speed > 0) {
       this.speed -= this.data.drag * seconds;
     }
 
-    this.speed = THREE.MathUtils.clamp(this.speed, this.data.minSpeed, this.data.maxSpeed);
+    this.speed = THREE.MathUtils.clamp(
+      this.speed,
+      this.speed <= 0 ? this.data.obstacleKnockbackSpeed : this.data.minSpeed,
+      this.data.maxSpeed
+    );
     window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));
 
     if (leftPressed && !this.wasLeftPressed) {
@@ -74,6 +85,7 @@ AFRAME.registerComponent('player-controls', {
     }
 
     this.updateRailSwitch(delta);
+    this.checkObstacleCollisions(previousZ);
   },
 
   getRailX(rail) {
@@ -125,6 +137,51 @@ AFRAME.registerComponent('player-controls', {
           speed: this.speed
         }
       }));
+    }
+  },
+
+  checkObstacleCollisions(previousZ) {
+    const position = this.el.object3D.position;
+
+    if (position.y > 0.05 || !this.el.sceneEl) {
+      return;
+    }
+
+    const obstacles = this.el.sceneEl.querySelectorAll(this.data.obstacleSelector);
+
+    for (const obstacle of obstacles) {
+      if (this.hitObstacles.has(obstacle)) {
+        continue;
+      }
+
+      const obstaclePosition = obstacle.object3D.position;
+      const obstacleData = obstacle.components.obstacle?.data;
+      const radiusX = obstacleData?.radiusX ?? 0.65;
+      const radiusZ = obstacleData?.radiusZ ?? 0.8;
+      const isSameRail = Math.abs(position.x - obstaclePosition.x) <= radiusX;
+      const wasInFront = previousZ >= obstaclePosition.z - radiusZ;
+      const isPastBack = position.z <= obstaclePosition.z + radiusZ;
+      const isOverlappingZ = Math.abs(position.z - obstaclePosition.z) <= radiusZ;
+      const isColliding = isSameRail && ((wasInFront && isPastBack) || isOverlappingZ);
+
+      if (!isColliding) {
+        continue;
+      }
+
+      const impactSpeed = this.speed;
+
+      this.hitObstacles.add(obstacle);
+      this.speed = this.data.obstacleKnockbackSpeed;
+      position.z = obstaclePosition.z + radiusZ + this.data.obstacleBounceDistance;
+      window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));
+      window.dispatchEvent(new CustomEvent('obstacle-hit', {
+        detail: {
+          x: obstaclePosition.x,
+          z: obstaclePosition.z,
+          speed: impactSpeed
+        }
+      }));
+      break;
     }
   }
 });

@@ -17,6 +17,8 @@ AFRAME.registerComponent('speed-camera', {
     highSpeed: { type: 'number', default: SPEED.highTier },
     boomShakeDuration: { type: 'number', default: 420 },
     boomShakeStrength: { type: 'number', default: 0.18 },
+    obstacleShakeDuration: { type: 'number', default: 360 },
+    obstacleShakeStrength: { type: 'number', default: 0.28 },
     topSpeedShakeStrength: { type: 'number', default: 0.035 },
     easing: { type: 'number', default: 5 }
   },
@@ -25,16 +27,23 @@ AFRAME.registerComponent('speed-camera', {
     this.speed = this.data.minSpeed;
     this.speedTier = 0;
     this.boomShakeAge = this.data.boomShakeDuration;
+    this.obstacleShakeAge = this.data.obstacleShakeDuration;
 
     this.onSpeed = (event) => {
       this.speed = event.detail.speed;
     };
 
+    this.onObstacleHit = () => {
+      this.obstacleShakeAge = 0;
+    };
+
     window.addEventListener('game-speed', this.onSpeed);
+    window.addEventListener('obstacle-hit', this.onObstacleHit);
   },
 
   remove() {
     window.removeEventListener('game-speed', this.onSpeed);
+    window.removeEventListener('obstacle-hit', this.onObstacleHit);
   },
 
   tick(_time, delta) {
@@ -85,12 +94,15 @@ AFRAME.registerComponent('speed-camera', {
 
   getShakeOffset(delta) {
     this.boomShakeAge += delta;
+    this.obstacleShakeAge += delta;
 
     const boomProgress = THREE.MathUtils.clamp(this.boomShakeAge / this.data.boomShakeDuration, 0, 1);
     const boomStrength = this.data.boomShakeStrength * (1 - boomProgress);
+    const obstacleProgress = THREE.MathUtils.clamp(this.obstacleShakeAge / this.data.obstacleShakeDuration, 0, 1);
+    const obstacleStrength = this.data.obstacleShakeStrength * (1 - obstacleProgress);
     const topSpeedProgress = THREE.MathUtils.clamp((this.speed - this.data.maxSpeed * 0.9) / (this.data.maxSpeed * 0.1), 0, 1);
     const topSpeedStrength = this.data.topSpeedShakeStrength * topSpeedProgress;
-    const strength = boomStrength + topSpeedStrength;
+    const strength = boomStrength + obstacleStrength + topSpeedStrength;
 
     return {
       x: (Math.random() - 0.5) * strength,

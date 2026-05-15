@@ -32,9 +32,11 @@ AFRAME.registerComponent('grind-sparks', {
     };
 
     this.onRailLand = (event) => this.triggerRailImpact(event.detail);
+    this.onObstacleHit = (event) => this.triggerObstacleImpact(event.detail);
 
     window.addEventListener('game-speed', this.onSpeed);
     window.addEventListener('rail-land', this.onRailLand);
+    window.addEventListener('obstacle-hit', this.onObstacleHit);
 
     for (let index = 0; index < this.data.count; index += 1) {
       const spark = document.createElement('a-sphere');
@@ -72,6 +74,7 @@ AFRAME.registerComponent('grind-sparks', {
   remove() {
     window.removeEventListener('game-speed', this.onSpeed);
     window.removeEventListener('rail-land', this.onRailLand);
+    window.removeEventListener('obstacle-hit', this.onObstacleHit);
     this.sparkRoot.remove();
   },
 
@@ -241,6 +244,24 @@ AFRAME.registerComponent('grind-sparks', {
     this.impact.object3D.visible = true;
     this.impact.object3D.position.set(position.x, 0.08, position.z);
     this.impact.object3D.scale.setScalar(0.25);
+
+    for (let index = 0; index < burstCount; index += 1) {
+      this.spawnImpactSpark(position, tier);
+    }
+  },
+
+  triggerObstacleImpact(detail) {
+    const tier = this.getSparkTier();
+    const position = {
+      x: detail.x,
+      z: detail.z + 0.45
+    };
+    const burstCount = 14 + tier * 5;
+
+    this.impactAge = 0;
+    this.impact.object3D.visible = true;
+    this.impact.object3D.position.set(position.x, 0.18, position.z);
+    this.impact.object3D.scale.setScalar(0.35);
 
     for (let index = 0; index < burstCount; index += 1) {
       this.spawnImpactSpark(position, tier);
