@@ -31,12 +31,15 @@ AFRAME.registerComponent('player-controls', {
     this.wasLeftPressed = false;
     this.wasRightPressed = false;
     this.activeObstacle = null;
+    this.isPlaying = false;
 
     this.onKeyDown = (event) => this.keys.add(event.code);
     this.onKeyUp = (event) => this.keys.delete(event.code);
 
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
+    window.addEventListener('game-start', () => { this.isPlaying = true; });
+    window.addEventListener('game-end', () => { this.isPlaying = false; this.speed = 0; });
   },
 
   remove() {
@@ -45,6 +48,10 @@ AFRAME.registerComponent('player-controls', {
   },
 
   tick(_time, delta) {
+    if (!this.isPlaying) {
+      return;
+    }
+
     const seconds = delta / 1000;
     const position = this.el.object3D.position;
     const leftPressed = this.keys.has('KeyA') || this.keys.has('ArrowLeft');

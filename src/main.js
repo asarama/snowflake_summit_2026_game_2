@@ -7,6 +7,7 @@ import './components/collectible.js';
 import './components/spawner.js';
 import './components/obstacle.js';
 import './components/platform-generator.js';
+import './components/game-state.js';
 
 const app = document.querySelector('#app');
 
@@ -21,11 +22,36 @@ app.innerHTML = `
     </section>
   </main>
 
+  <div class="timer hidden" id="timer">60</div>
+
+  <div class="overlay active" id="start-screen">
+    <div class="overlay-content">
+      <h2>Snowflake Summit</h2>
+      <p>Grind the rails, avoid obstacles, and collect crystals!</p>
+      <button class="start-button" id="start-button">Start Game</button>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="countdown-screen">
+    <div class="overlay-content">
+      <div class="countdown" id="countdown">3</div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="game-over-screen">
+    <div class="overlay-content">
+      <h2>Game Over</h2>
+      <p>Final Score: <span id="final-score">0</span></p>
+      <button class="start-button" id="restart-button">Play Again</button>
+    </div>
+  </div>
+
   <a-scene
     background="color: #07111f"
     renderer="antialias: true; colorManagement: true"
     spawner="target: #collectibles; count: 8; radius: 7"
     platform-generator="player: #rig; platformCount: 3; platformLength: 36; railCount: 3; railSpacing: 2.4; startZ: 18"
+    game-state="gameDuration: 60"
   >
     <a-assets>
       <a-mixin id="crystalMaterial" material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.1; roughness: 0.25"></a-mixin>

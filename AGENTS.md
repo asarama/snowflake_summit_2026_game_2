@@ -18,6 +18,8 @@ The player starts on the center of three parallel rails and moves forward automa
 - Camera position, FOV, and shake respond to speed.
 - The path is generated as platform segments containing rails, ground, and obstacles.
 - Three platform segments exist at startup; when the player moves past the oldest segment, it is destroyed and a new segment is generated ahead.
+- Game starts with a start screen overlay, then a 3-second countdown, then 60 seconds of gameplay.
+- After 60 seconds, the game ends with a dimmed overlay showing the final score and a restart button.
 
 ## Important commands
 
@@ -87,8 +89,14 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Maintains a rolling set of platform entities ahead of the player.
   - Removes the oldest platform after the player passes its end and appends a new platform farther forward.
 
+- **`src/components/game-state.js`**
+  - Manages game flow: start screen, 3-second countdown, 60-second timer, and game over screen.
+  - Emits `game-start`, `game-end`, and `game-reset` events.
+  - Tracks score and displays final score on game over.
+
 - **`src/styles.css`**
   - HUD and page styling.
+  - Overlay styles for start screen, countdown, timer, and game over.
 
 ## Current architecture notes
 
@@ -100,6 +108,9 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - The game uses browser `CustomEvent`s for lightweight communication:
   - `game-speed` updates HUD, sparks, and camera.
   - `game-score` updates HUD score.
+  - `game-start` enables player movement and begins gameplay.
+  - `game-end` stops player movement and shows game over screen.
+  - `game-reset` resets score and returns to start screen.
   - `rail-land` triggers landing impact visuals after rail switches.
   - `obstacle-hit` triggers obstacle impact sparks and camera shake.
 
