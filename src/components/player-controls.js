@@ -12,7 +12,6 @@ AFRAME.registerComponent('player-controls', {
     this.direction = new THREE.Vector3();
     this.forward = new THREE.Vector3();
     this.right = new THREE.Vector3();
-    this.camera = null;
 
     this.onKeyDown = (event) => this.keys.add(event.code);
     this.onKeyUp = (event) => this.keys.delete(event.code);
@@ -27,14 +26,6 @@ AFRAME.registerComponent('player-controls', {
   },
 
   tick(_time, delta) {
-    if (!this.camera) {
-      this.camera = this.el.querySelector('[camera]');
-    }
-
-    if (!this.camera) {
-      return;
-    }
-
     this.direction.set(0, 0, 0);
 
     if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) this.direction.z -= 1;
@@ -47,7 +38,7 @@ AFRAME.registerComponent('player-controls', {
     }
 
     this.direction.normalize();
-    this.camera.object3D.getWorldDirection(this.forward);
+    this.el.object3D.getWorldDirection(this.forward);
     this.forward.y = 0;
     this.forward.normalize();
     this.right.crossVectors(this.forward, new THREE.Vector3(0, 1, 0)).normalize();
