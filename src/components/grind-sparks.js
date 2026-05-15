@@ -20,6 +20,9 @@ AFRAME.registerComponent('grind-sparks', {
     this.sparkTier = 0;
     this.boomAge = 1000;
     this.boomLifetime = 520;
+    this.sparkRoot = document.createElement('a-entity');
+    this.sparkRoot.setAttribute('id', 'spark-root');
+    this.el.sceneEl.appendChild(this.sparkRoot);
 
     this.onSpeed = (event) => {
       this.speed = event.detail.speed;
@@ -32,7 +35,7 @@ AFRAME.registerComponent('grind-sparks', {
       spark.setAttribute('radius', '0.035');
       spark.setAttribute('material', 'color: #ffd166; emissive: #ff8c00; emissiveIntensity: 1.4; shader: standard');
       spark.object3D.visible = false;
-      this.el.appendChild(spark);
+      this.sparkRoot.appendChild(spark);
 
       this.sparks.push({
         entity: spark,
@@ -48,11 +51,12 @@ AFRAME.registerComponent('grind-sparks', {
     this.boom.setAttribute('radius-tubular', '0.018');
     this.boom.setAttribute('material', 'color: #ffffff; emissive: #8be9fd; emissiveIntensity: 1.6; transparent: true; opacity: 0.85');
     this.boom.object3D.visible = false;
-    this.el.appendChild(this.boom);
+    this.sparkRoot.appendChild(this.boom);
   },
 
   remove() {
     window.removeEventListener('game-speed', this.onSpeed);
+    this.sparkRoot.remove();
   },
 
   tick(_time, delta) {
@@ -130,14 +134,15 @@ AFRAME.registerComponent('grind-sparks', {
     const spark = this.sparks[this.spawnCursor];
     const side = Math.random() > 0.5 ? 1 : -1;
     const force = 0.7 + tier * 0.45;
+    const railPosition = this.getRailPosition();
 
     spark.age = 0;
     spark.entity.object3D.visible = true;
     spark.entity.setAttribute('material', this.getSparkMaterial(tier));
     spark.entity.object3D.position.set(
-      (Math.random() - 0.5) * this.data.spread,
+      railPosition.x + (Math.random() - 0.5) * this.data.spread,
       this.data.railY,
-      0.35 + Math.random() * 0.35
+      railPosition.z + 0.35 + Math.random() * 0.35
     );
     spark.entity.object3D.scale.setScalar(1);
     spark.velocity.set(
@@ -147,6 +152,15 @@ AFRAME.registerComponent('grind-sparks', {
     );
 
     this.spawnCursor = (this.spawnCursor + 1) % this.sparks.length;
+  },
+
+  getRailPosition() {
+    const position = this.el.object3D.position;
+
+    return {
+      x: position.x,
+      z: position.z
+    };
   },
 
   getSparkMaterial(tier) {
@@ -166,8 +180,11 @@ AFRAME.registerComponent('grind-sparks', {
   },
 
   triggerSonicBoom() {
+    const railPosition = this.getRailPosition();
+
     this.boomAge = 0;
     this.boom.object3D.visible = true;
+    this.boom.object3D.position.set(railPosition.x, 0.55, railPosition.z + 0.15);
     this.boom.object3D.scale.setScalar(0.2);
   },
 
