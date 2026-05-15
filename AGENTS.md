@@ -75,17 +75,16 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Uses shared speed min/max/tier defaults from `src/config/speed.js`.
 
 - **`src/components/collectible.js`**
-  - Handles collectible behavior and scoring events.
-
-- **`src/components/spawner.js`**
-  - Spawns collectibles into the scene.
+  - Handles collectible behavior, scoring events, and emits `collectible-collected` event on collection.
+  - Collectibles are generated per platform on rails by `platform-generator`.
+  - Collecting boosts player speed beyond the regular max speed.
 
 - **`src/components/obstacle.js`**
   - Marks static rail blockers with the `.obstacle` class.
   - Defines simple X/Z collision radii used by `player-controls`.
 
 - **`src/components/platform-generator.js`**
-  - Generates platform segments made of ground, three rails, and repeated static obstacle placements.
+  - Generates platform segments made of ground, three rails, obstacles, and collectibles.
   - Maintains a rolling set of platform entities ahead of the player.
   - Removes the oldest platform after the player passes its end and appends a new platform farther forward.
 
@@ -111,6 +110,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - `game-start` enables player movement and begins gameplay.
   - `game-end` stops player movement and shows game over screen.
   - `game-reset` resets score and returns to start screen.
+  - `collectible-collected` boosts player speed beyond regular max.
   - `rail-land` triggers landing impact visuals after rail switches.
   - `obstacle-hit` triggers obstacle impact sparks and camera shake.
 

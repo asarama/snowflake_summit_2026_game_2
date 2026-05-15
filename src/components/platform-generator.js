@@ -7,6 +7,11 @@ const OBSTACLES = [
   { rail: 1, z: -20 },
   { rail: 2, z: -32 }
 ];
+const COLLECTIBLES = [
+  { rail: 0, z: -12 },
+  { rail: 2, z: -24 },
+  { rail: 1, z: -36 }
+];
 
 AFRAME.registerComponent('platform-generator', {
   schema: {
@@ -58,6 +63,7 @@ AFRAME.registerComponent('platform-generator', {
     this.addGround(platform, centerZ);
     this.addRails(platform, centerZ);
     this.addObstacles(platform, startZ);
+    this.addCollectibles(platform, startZ);
     this.el.appendChild(platform);
     this.platforms.push({ el: platform, startZ, endZ });
     this.nextPlatformStartZ = endZ;
@@ -110,6 +116,23 @@ AFRAME.registerComponent('platform-generator', {
       obstacle.setAttribute('depth', 0.8);
       obstacle.setAttribute('material', 'color: #ff5555; emissive: #7f1d1d; emissiveIntensity: 0.45; metalness: 0.2; roughness: 0.35');
       platform.appendChild(obstacle);
+    }
+  },
+
+  addCollectibles(platform, startZ) {
+    for (const collectibleConfig of COLLECTIBLES) {
+      const collectible = document.createElement('a-octahedron');
+
+      collectible.classList.add('collectible');
+      collectible.setAttribute('collectible', 'points: 1');
+      collectible.setAttribute('radius', 0.35);
+      collectible.setAttribute('position', {
+        x: this.getRailX(collectibleConfig.rail),
+        y: 1.2,
+        z: startZ + collectibleConfig.z
+      });
+      collectible.setAttribute('material', 'color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.1; roughness: 0.25');
+      platform.appendChild(collectible);
     }
   },
 

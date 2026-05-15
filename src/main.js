@@ -4,7 +4,6 @@ import './components/player-controls.js';
 import './components/grind-sparks.js';
 import './components/speed-camera.js';
 import './components/collectible.js';
-import './components/spawner.js';
 import './components/obstacle.js';
 import './components/platform-generator.js';
 import './components/game-state.js';
@@ -49,7 +48,6 @@ app.innerHTML = `
   <a-scene
     background="color: #07111f"
     renderer="antialias: true; colorManagement: true"
-    spawner="target: #collectibles; count: 8; radius: 7"
     platform-generator="player: #rig; platformCount: 3; platformLength: 36; railCount: 3; railSpacing: 2.4; startZ: 18"
     game-state="gameDuration: 60"
   >
@@ -69,9 +67,6 @@ app.innerHTML = `
     <a-entity light="type: directional; intensity: 1.2; color: #ffffff" position="-3 6 4"></a-entity>
     <a-entity light="type: point; intensity: 1.6; color: #66e8ff; distance: 18" position="0 4 0"></a-entity>
 
-    <a-entity id="collectibles"></a-entity>
-
-    <a-text value="Rail grind prototype" align="center" color="#ffffff" position="0 2.2 8" scale="1.2 1.2 1.2"></a-text>
   </a-scene>
 `;
 

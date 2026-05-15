@@ -24,7 +24,11 @@ AFRAME.registerComponent('collectible', {
 
   collect() {
     score += this.data.points;
+    const position = this.el.object3D.position;
     window.dispatchEvent(new CustomEvent('game-score', { detail: { score } }));
+    window.dispatchEvent(new CustomEvent('collectible-collected', {
+      detail: { x: position.x, y: position.y, z: position.z }
+    }));
     this.el.parentNode.removeChild(this.el);
   }
 });

@@ -17,7 +17,9 @@ AFRAME.registerComponent('player-controls', {
     hopHeight: { type: 'number', default: 0.8 },
     obstacleSelector: { type: 'string', default: '.obstacle' },
     obstacleBounceDistance: { type: 'number', default: 1.25 },
-    obstacleKnockbackSpeed: { type: 'number', default: -2 }
+    obstacleKnockbackSpeed: { type: 'number', default: -2 },
+    collectibleBoost: { type: 'number', default: 8 },
+    collectibleMaxSpeed: { type: 'number', default: 45 }
   },
 
   init() {
@@ -40,6 +42,10 @@ AFRAME.registerComponent('player-controls', {
     window.addEventListener('keyup', this.onKeyUp);
     window.addEventListener('game-start', () => { this.isPlaying = true; });
     window.addEventListener('game-end', () => { this.isPlaying = false; this.speed = 0; });
+    window.addEventListener('collectible-collected', () => {
+      this.speed = Math.min(this.speed + this.data.collectibleBoost, this.data.collectibleMaxSpeed);
+      window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));
+    });
   },
 
   remove() {
