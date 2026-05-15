@@ -108,7 +108,7 @@ AFRAME.registerComponent('grind-sparks', {
 
   getSpawnInterval() {
     if (this.sparkTier === 2) {
-      return 14;
+      return 9;
     }
 
     if (this.sparkTier === 1) {
@@ -125,6 +125,7 @@ AFRAME.registerComponent('grind-sparks', {
 
     spark.age = 0;
     spark.entity.object3D.visible = true;
+    spark.entity.setAttribute('material', this.getSparkMaterial(tier));
     spark.entity.object3D.position.set(
       (Math.random() - 0.5) * this.data.spread,
       this.data.railY,
@@ -138,6 +139,22 @@ AFRAME.registerComponent('grind-sparks', {
     );
 
     this.spawnCursor = (this.spawnCursor + 1) % this.sparks.length;
+  },
+
+  getSparkMaterial(tier) {
+    if (tier === 2) {
+      const purple = Math.random() > 0.35;
+      const color = purple ? '#bd93f9' : '#ff79c6';
+      const emissive = purple ? '#8b5cf6' : '#ff2ea6';
+
+      return `color: ${color}; emissive: ${emissive}; emissiveIntensity: 1.9; shader: standard`;
+    }
+
+    if (tier === 1 && Math.random() > 0.55) {
+      return 'color: #ff5555; emissive: #ff2d00; emissiveIntensity: 1.7; shader: standard';
+    }
+
+    return 'color: #ffd166; emissive: #ff8c00; emissiveIntensity: 1.4; shader: standard';
   },
 
   triggerSonicBoom() {
