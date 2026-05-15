@@ -56,7 +56,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 
 - **`src/config/speed.js`**
   - Shared speed configuration.
-  - Currently exports `SPEED` with `start`, `min`, `max`, `mediumTier`, and `highTier`.
+  - Exports `SPEED` with `start`, `min`, `max`, `mediumTier`, `highTier`, `veryHighTier`, and `extremeTier`.
   - Components that care about speed thresholds should import from here instead of duplicating constants.
 
 - **`src/components/player-controls.js`**
@@ -81,20 +81,22 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Spark entities are parented to a scene-level `#spark-root`, not the player rig, so existing sparks stay in world/rail space during player hops.
   - Reads `gameStateStore.isPlaying` to gate its `tick()`.
   - Only spawns new grind sparks when the player is on the rail and moving at `0.5` speed or faster.
-  - Uses speed tiers for spark density/color.
-  - Creates the sonic boom visual when crossing upward into a higher speed tier.
+  - Uses five speed tiers (0-4) for spark density, color, and force.
+  - Spawn interval scales from 90ms at tier 0 down to 3ms at tier 4.
+  - Sonic boom visual scales bigger with each higher tier crossed.
+  - Rail-land and obstacle-hit impacts scale burst count and spark force with the triggering speed.
   - Listens for `rail-land` to create a short landing impact burst and ring.
   - Listens for `obstacle-hit` to create a larger obstacle impact burst.
   - Listens for `collectible-collected` to create green spark burst.
-  - Uses `SPEED.mediumTier` and `SPEED.highTier` as defaults.
+  - Uses `SPEED.mediumTier`, `highTier`, `veryHighTier`, and `extremeTier` as defaults.
 
 - **`src/components/speed-camera.js`**
   - Reads `gameStateStore.isPlaying` to gate its `tick()`.
   - Listens to `game-speed`.
   - Moves the camera back/up and widens FOV as speed increases.
-  - Adds a camera shake burst when crossing upward into a higher speed tier.
-  - Adds a camera shake burst on `obstacle-hit`.
-  - Adds subtle camera shake at 90%+ of top speed.
+  - Adds a camera shake burst when crossing upward into a higher speed tier; shake strength scales with the tier reached.
+  - Adds a camera shake burst on `obstacle-hit`; shake strength scales with the impact speed.
+  - Adds continuous camera shake that gets progressively worse as speed increases (no longer gated to 90%+).
   - Uses shared speed min/max/tier defaults from `src/config/speed.js`.
 
 - **`src/components/collectible.js`**

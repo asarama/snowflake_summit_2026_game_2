@@ -96,7 +96,7 @@ app.innerHTML = `
       <a-sphere position="0 1.05 0" radius="0.3" scale="1 0.65 1"
         material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.3; metalness: 0.1; roughness: 0.1; opacity: 0.75; transparent: true"></a-sphere>
       <!-- UFO bottom glow ring -->
-      <a-torus position="0 0.75 0" radius="0.45" radius-tubular="0.04" arc="360"
+      <a-torus position="0 0.75 0" radius="0.45" rotation="90 0 0" radius-tubular="0.04" arc="360"
         material="color: #50fa7b; emissive: #50fa7b; emissiveIntensity: 0.8"></a-torus>
       <a-camera position="0 3.4 3.5" rotation="-28 0 0" wasd-controls="enabled: false" look-controls="enabled: false" speed-camera>
         <a-cursor raycaster="objects: .collectible" material="color: #ffffff; shader: flat"></a-cursor>

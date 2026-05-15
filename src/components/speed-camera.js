@@ -16,11 +16,14 @@ AFRAME.registerComponent('speed-camera', {
     maxFov: { type: 'number', default: 105 },
     mediumSpeed: { type: 'number', default: SPEED.mediumTier },
     highSpeed: { type: 'number', default: SPEED.highTier },
+    veryHighSpeed: { type: 'number', default: SPEED.veryHighTier },
+    extremeSpeed: { type: 'number', default: SPEED.extremeTier },
     boomShakeDuration: { type: 'number', default: 420 },
     boomShakeStrength: { type: 'number', default: 0.18 },
     obstacleShakeDuration: { type: 'number', default: 360 },
     obstacleShakeStrength: { type: 'number', default: 0.28 },
     topSpeedShakeStrength: { type: 'number', default: 0.055 },
+    speedShakeMultiplier: { type: 'number', default: 3.5 },
     easing: { type: 'number', default: 15 }
   },
 
@@ -34,8 +37,9 @@ AFRAME.registerComponent('speed-camera', {
       this.speed = event.detail.speed;
     };
 
-    this.onObstacleHit = () => {
+    this.onObstacleHit = (event) => {
       this.obstacleShakeAge = 0;
+      this.lastImpactSpeed = event.detail?.speed || this.data.mediumSpeed;
     };
 
     window.addEventListener('game-speed', this.onSpeed);
@@ -45,6 +49,7 @@ AFRAME.registerComponent('speed-camera', {
       this.speedTier = 0;
       this.boomShakeAge = this.data.boomShakeDuration;
       this.obstacleShakeAge = this.data.obstacleShakeDuration;
+      this.lastImpactSpeed = this.data.mediumSpeed;
     });
   },
 
@@ -90,6 +95,14 @@ AFRAME.registerComponent('speed-camera', {
   },
 
   getSpeedTier() {
+    if (this.speed >= this.data.extremeSpeed) {
+      return 4;
+    }
+
+    if (this.speed >= this.data.veryHighSpeed) {
+      return 3;
+    }
+
     if (this.speed >= this.data.highSpeed) {
       return 2;
     }
@@ -106,11 +119,12 @@ AFRAME.registerComponent('speed-camera', {
     this.obstacleShakeAge += delta;
 
     const boomProgress = THREE.MathUtils.clamp(this.boomShakeAge / this.data.boomShakeDuration, 0, 1);
-    const boomStrength = this.data.boomShakeStrength * (1 - boomProgress);
+    const boomStrength = this.data.boomShakeStrength * (1 + this.speedTier * 0.35) * (1 - boomProgress);
     const obstacleProgress = THREE.MathUtils.clamp(this.obstacleShakeAge / this.data.obstacleShakeDuration, 0, 1);
-    const obstacleStrength = this.data.obstacleShakeStrength * (1 - obstacleProgress);
-    const topSpeedProgress = THREE.MathUtils.clamp((this.speed - this.data.maxSpeed * 0.9) / (this.data.maxSpeed * 0.1), 0, 1);
-    const topSpeedStrength = this.data.topSpeedShakeStrength * topSpeedProgress;
+    const impactFactor = Math.max(1, (this.lastImpactSpeed || this.data.mediumSpeed) / this.data.mediumSpeed);
+    const obstacleStrength = this.data.obstacleShakeStrength * impactFactor * (1 - obstacleProgress);
+    const speedProgress = THREE.MathUtils.clamp((this.speed - this.data.minSpeed) / (this.data.maxSpeed - this.data.minSpeed), 0, 1);
+    const topSpeedStrength = this.data.topSpeedShakeStrength * (speedProgress * this.data.speedShakeMultiplier);
     const strength = boomStrength + obstacleStrength + topSpeedStrength;
 
     return {

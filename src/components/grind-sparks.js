@@ -12,7 +12,9 @@ AFRAME.registerComponent('grind-sparks', {
     railY: { type: 'number', default: 0.05 },
     minSparkSpeed: { type: 'number', default: 0.5 },
     mediumSpeed: { type: 'number', default: SPEED.mediumTier },
-    highSpeed: { type: 'number', default: SPEED.highTier }
+    highSpeed: { type: 'number', default: SPEED.highTier },
+    veryHighSpeed: { type: 'number', default: SPEED.veryHighTier },
+    extremeSpeed: { type: 'number', default: SPEED.extremeTier }
   },
 
   init() {
@@ -96,7 +98,7 @@ AFRAME.registerComponent('grind-sparks', {
     const nextTier = this.getSparkTier();
 
     if (nextTier > this.sparkTier) {
-      this.triggerSonicBoom();
+      this.triggerSonicBoom(nextTier);
     }
 
     this.sparkTier = nextTier;
@@ -143,6 +145,14 @@ AFRAME.registerComponent('grind-sparks', {
       return -1;
     }
 
+    if (speed >= this.data.extremeSpeed) {
+      return 4;
+    }
+
+    if (speed >= this.data.veryHighSpeed) {
+      return 3;
+    }
+
     if (speed >= this.data.highSpeed) {
       return 2;
     }
@@ -159,6 +169,14 @@ AFRAME.registerComponent('grind-sparks', {
   },
 
   getSpawnInterval() {
+    if (this.sparkTier === 4) {
+      return 3;
+    }
+
+    if (this.sparkTier === 3) {
+      return 5;
+    }
+
     if (this.sparkTier === 2) {
       return 9;
     }
@@ -173,7 +191,7 @@ AFRAME.registerComponent('grind-sparks', {
   spawnSpark(tier) {
     const spark = this.sparks[this.spawnCursor];
     const side = Math.random() > 0.5 ? 1 : -1;
-    const force = 0.7 + tier * 0.45;
+    const force = 0.7 + tier * 0.55;
     const railPosition = this.getRailPosition();
 
     spark.age = 0;
@@ -194,11 +212,11 @@ AFRAME.registerComponent('grind-sparks', {
     this.spawnCursor = (this.spawnCursor + 1) % this.sparks.length;
   },
 
-  spawnImpactSpark(position, tier) {
+  spawnImpactSpark(position, tier, speedFactor = 1) {
     const spark = this.sparks[this.spawnCursor];
     const angle = Math.random() * Math.PI * 2;
-    const force = 1.3 + tier * 0.35;
-    const horizontalForce = 1.8 + Math.random() * 1.5;
+    const force = (1.3 + tier * 0.35) * speedFactor;
+    const horizontalForce = (1.8 + Math.random() * 1.5) * speedFactor;
 
     spark.age = 0;
     spark.entity.object3D.visible = true;
@@ -252,6 +270,20 @@ AFRAME.registerComponent('grind-sparks', {
   },
 
   getSparkMaterial(tier) {
+    if (tier === 4) {
+      const white = Math.random() > 0.4;
+      const color = white ? '#ffffff' : '#00d4ff';
+      const emissive = white ? '#e0f7ff' : '#00a8cc';
+      return `color: ${color}; emissive: ${emissive}; emissiveIntensity: 2.2; shader: standard`;
+    }
+
+    if (tier === 3) {
+      const cyan = Math.random() > 0.4;
+      const color = cyan ? '#8be9fd' : '#00d4ff';
+      const emissive = cyan ? '#50e3c2' : '#0099cc';
+      return `color: ${color}; emissive: ${emissive}; emissiveIntensity: 2.0; shader: standard`;
+    }
+
     if (tier === 2) {
       const purple = Math.random() > 0.35;
       const color = purple ? '#bd93f9' : '#ff79c6';
@@ -267,48 +299,52 @@ AFRAME.registerComponent('grind-sparks', {
     return 'color: #ffd166; emissive: #ff8c00; emissiveIntensity: 1.4; shader: standard';
   },
 
-  triggerSonicBoom() {
+  triggerSonicBoom(tier) {
     const railPosition = this.getRailPosition();
+    const scaleMult = 1 + tier * 0.5;
 
     this.boomAge = 0;
     this.boom.object3D.visible = true;
     this.boom.object3D.position.set(railPosition.x, 0.55, railPosition.z + 0.15);
-    this.boom.object3D.scale.setScalar(0.2);
+    this.boom.object3D.scale.setScalar(0.2 * scaleMult);
   },
 
   triggerRailImpact(detail) {
     const tier = Math.max(this.getSparkTier(), 0);
+    const speedFactor = Math.max(1, Math.abs(detail.speed) / this.data.mediumSpeed);
     const position = {
       x: detail.x,
       z: detail.z
     };
-    const burstCount = 8 + tier * 4;
+    const burstCount = Math.floor((8 + tier * 4) * speedFactor);
 
     this.impactAge = 0;
     this.impact.object3D.visible = true;
     this.impact.object3D.position.set(position.x, 0.08, position.z);
-    this.impact.object3D.scale.setScalar(0.25);
+    this.impact.object3D.scale.setScalar(0.25 + tier * 0.08);
 
     for (let index = 0; index < burstCount; index += 1) {
-      this.spawnImpactSpark(position, tier);
+      this.spawnImpactSpark(position, tier, speedFactor);
     }
   },
 
   triggerObstacleImpact(detail) {
     const tier = Math.max(this.getSparkTier(), 0);
+    const impactSpeed = detail?.speed ?? this.data.mediumSpeed;
+    const speedFactor = Math.max(1, impactSpeed / this.data.mediumSpeed);
     const position = {
       x: detail.x,
       z: detail.z + 0.45
     };
-    const burstCount = 14 + tier * 5;
+    const burstCount = Math.floor((14 + tier * 5) * speedFactor);
 
     this.impactAge = 0;
     this.impact.object3D.visible = true;
     this.impact.object3D.position.set(position.x, 0.18, position.z);
-    this.impact.object3D.scale.setScalar(0.35);
+    this.impact.object3D.scale.setScalar(0.35 + tier * 0.12);
 
     for (let index = 0; index < burstCount; index += 1) {
-      this.spawnImpactSpark(position, tier);
+      this.spawnImpactSpark(position, tier, speedFactor);
     }
   },
 
