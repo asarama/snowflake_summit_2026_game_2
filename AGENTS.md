@@ -20,7 +20,9 @@ The player starts on a single center rail and moves forward automatically. Addit
 - Grinding creates speed-dependent sparks and stops generating new grind sparks below `0.5` speed.
 - Crossing speed tiers creates a sonic boom effect.
 - Camera position, FOV, and shake respond to speed.
-- The path is generated as platform segments containing rails, ground, and obstacles.
+- The path is generated as platform segments containing rails, ground, obstacles, and collectibles.
+- Obstacles and collectibles are spawned procedurally per platform with randomized count (2-6), position, rail, and type.
+- A minimum Z separation of 10 units ensures obstacles and collectibles never spawn too close to each other.
 - Three platform segments exist at startup; when the player moves past the oldest segment, it is destroyed and a new segment is generated ahead.
 - Game starts with a start screen overlay, then a 3-second countdown, then 60 seconds of gameplay.
 - After 60 seconds, the game ends with a dimmed overlay showing the final score (distance traveled in meters) and a restart button.
@@ -121,6 +123,8 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Reads `gameStateStore.isPlaying` to gate its `tick()`.
   - Removes the oldest platform after the player passes its end and appends a new platform farther forward.
   - Listens for `rail-unlock` and retroactively adds the newly unlocked rail to existing visible platforms.
+  - Obstacles and collectibles are spawned procedurally per platform with randomized count (2-6), position, rail, and type.
+  - A minimum Z separation of 10 units ensures obstacles and collectibles never spawn too close to each other.
 
 - **`src/components/game-state.js`**
   - Manages game flow: start screen, 3-second countdown, 60-second timer, and game over screen.

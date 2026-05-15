@@ -4,16 +4,15 @@ import { RAIL_COLORS } from '../config/rails.js';
 
 const PLATFORM_LENGTH = 100;
 const RAIL_SPACING = 2.4;
-const OBSTACLES = [
-  { rail: 0, z: -8 },
-  { rail: 1, z: -20 },
-  { rail: 2, z: -32 }
-];
-const COLLECTIBLES = [
-  { rail: 0, z: -12 },
-  { rail: 2, z: -24 },
-  { rail: 1, z: -36 }
-];
+
+const SPAWN = {
+  minCount: 2,
+  maxCount: 6,
+  minSeparation: 10,
+  obstacleChance: 0.5,
+  minZ: 8,
+  maxZOffset: 8
+};
 
 AFRAME.registerComponent('platform-generator', {
   schema: {
@@ -80,13 +79,15 @@ AFRAME.registerComponent('platform-generator', {
     const endZ = startZ - this.data.platformLength;
     const centerZ = startZ - this.data.platformLength / 2;
     const platform = document.createElement('a-entity');
+    const activeRails = gameStateStore.activeRailIndices;
+    const spawns = this.generateSpawns(activeRails);
 
     platform.classList.add('platform');
     platform.setAttribute('position', '0 0 0');
     this.addGround(platform, centerZ);
     this.addRails(platform, centerZ);
-    this.addObstacles(platform, startZ);
-    this.addCollectibles(platform, startZ);
+    this.addObstacles(platform, startZ, spawns);
+    this.addCollectibles(platform, startZ, spawns);
     this.el.appendChild(platform);
     this.platforms.push({ el: platform, startZ, endZ });
     this.nextPlatformStartZ = endZ;
@@ -136,11 +137,32 @@ AFRAME.registerComponent('platform-generator', {
     platform.appendChild(railEntity);
   },
 
-  addObstacles(platform, startZ) {
-    const activeRails = gameStateStore.activeRailIndices;
+  generateSpawns(activeRails) {
+    const count = Math.floor(Math.random() * (SPAWN.maxCount - SPAWN.minCount + 1)) + SPAWN.minCount;
+    const minZ = SPAWN.minZ;
+    const maxZ = this.data.platformLength - SPAWN.maxZOffset;
+    const positions = [];
+    let attempts = 0;
 
-    for (const obstacleConfig of OBSTACLES) {
-      if (!activeRails.includes(obstacleConfig.rail)) {
+    while (positions.length < count && attempts < 200) {
+      attempts += 1;
+      const z = minZ + Math.random() * (maxZ - minZ);
+      const tooClose = positions.some((p) => Math.abs(p.z - z) < SPAWN.minSeparation);
+
+      if (!tooClose) {
+        const type = Math.random() < SPAWN.obstacleChance ? 'obstacle' : 'collectible';
+        const rail = activeRails[Math.floor(Math.random() * activeRails.length)];
+        positions.push({ z, type, rail });
+      }
+    }
+
+    positions.sort((a, b) => a.z - b.z);
+    return positions;
+  },
+
+  addObstacles(platform, startZ, spawns) {
+    for (const spawn of spawns) {
+      if (spawn.type !== 'obstacle') {
         continue;
       }
 
@@ -148,9 +170,9 @@ AFRAME.registerComponent('platform-generator', {
 
       obstacle.setAttribute('obstacle', '');
       obstacle.setAttribute('position', {
-        x: this.getRailX(obstacleConfig.rail),
+        x: this.getRailX(spawn.rail),
         y: 0.45,
-        z: startZ + obstacleConfig.z
+        z: startZ - spawn.z
       });
       obstacle.setAttribute('width', 0.9);
       obstacle.setAttribute('height', 0.9);
@@ -160,11 +182,9 @@ AFRAME.registerComponent('platform-generator', {
     }
   },
 
-  addCollectibles(platform, startZ) {
-    const activeRails = gameStateStore.activeRailIndices;
-
-    for (const collectibleConfig of COLLECTIBLES) {
-      if (!activeRails.includes(collectibleConfig.rail)) {
+  addCollectibles(platform, startZ, spawns) {
+    for (const spawn of spawns) {
+      if (spawn.type !== 'collectible') {
         continue;
       }
 
@@ -174,9 +194,9 @@ AFRAME.registerComponent('platform-generator', {
 
       collectibleGroup.classList.add('collectible-group');
       collectibleGroup.setAttribute('position', {
-        x: this.getRailX(collectibleConfig.rail),
+        x: this.getRailX(spawn.rail),
         y: 1.2,
-        z: startZ + collectibleConfig.z
+        z: startZ - spawn.z
       });
 
       collisionBox.classList.add('collectible');
