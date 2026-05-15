@@ -185,3 +185,11 @@ p {
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
   line-height: 1.1;
 }
+
+.unlock-countdown {
+  margin-top: 24px;
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #8be9fd;
+  line-height: 1;
+}

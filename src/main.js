@@ -46,6 +46,7 @@ app.innerHTML = `
     <div class="overlay-content">
       <div class="unlock-header">Greybeam Powerup!</div>
       <div class="unlock-message" id="unlock-message"></div>
+      <div class="unlock-countdown" id="unlock-countdown">3</div>
     </div>
   </div>
 

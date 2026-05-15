@@ -18,6 +18,7 @@ AFRAME.registerComponent('game-state', {
     this.timerDisplay = document.getElementById('timer');
     this.finalScoreDisplay = document.getElementById('final-score');
     this.unlockMessageDisplay = document.getElementById('unlock-message');
+    this.unlockCountdownDisplay = document.getElementById('unlock-countdown');
 
     this.startButton = document.getElementById('start-button');
     this.restartButton = document.getElementById('restart-button');
@@ -119,20 +120,30 @@ AFRAME.registerComponent('game-state', {
   showUnlockMessage(message) {
     gameStateStore.isPlaying = false;
     clearInterval(this.gameInterval);
+    clearInterval(this.unlockCountdownInterval);
 
     this.unlockMessageDisplay.textContent = message;
+    let countdown = 3;
+    this.unlockCountdownDisplay.textContent = countdown;
     this.unlockMessageScreen.classList.remove('hidden');
     this.unlockMessageScreen.classList.add('active');
 
-    setTimeout(() => {
-      this.unlockMessageScreen.classList.remove('active');
-      this.unlockMessageScreen.classList.add('hidden');
-      gameStateStore.isPlaying = true;
-      this.startTimer();
-    }, 2500);
+    this.unlockCountdownInterval = setInterval(() => {
+      countdown -= 1;
+      if (countdown <= 0) {
+        clearInterval(this.unlockCountdownInterval);
+        this.unlockMessageScreen.classList.remove('active');
+        this.unlockMessageScreen.classList.add('hidden');
+        gameStateStore.isPlaying = true;
+        this.startTimer();
+      } else {
+        this.unlockCountdownDisplay.textContent = countdown;
+      }
+    }, 1000);
   },
 
   remove() {
     clearInterval(this.gameInterval);
+    clearInterval(this.unlockCountdownInterval);
   }
 });
