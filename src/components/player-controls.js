@@ -19,7 +19,7 @@ AFRAME.registerComponent('player-controls', {
     obstacleBounceDistance: { type: 'number', default: 1.25 },
     obstacleKnockbackSpeed: { type: 'number', default: -2 },
     collectibleBoost: { type: 'number', default: 8 },
-    collectibleMaxSpeed: { type: 'number', default: 45 }
+    collectibleMaxSpeed: { type: 'number', default: 100 }
   },
 
   init() {
