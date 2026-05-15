@@ -74,6 +74,14 @@ app.innerHTML = `
   </a-scene>
 `;
 
+const skipCountdownCheckbox = document.getElementById('skip-countdown');
+if (skipCountdownCheckbox) {
+  skipCountdownCheckbox.checked = localStorage.getItem('skipCountdown') === 'true';
+  skipCountdownCheckbox.addEventListener('change', () => {
+    localStorage.setItem('skipCountdown', skipCountdownCheckbox.checked);
+  });
+}
+
 window.addEventListener('game-score', (event) => {
   const score = document.querySelector('#score');
   score.textContent = event.detail.score;

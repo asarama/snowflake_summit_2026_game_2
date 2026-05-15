@@ -27,9 +27,17 @@ AFRAME.registerComponent('game-state', {
   },
 
   startGame() {
-    this.state = 'countdown';
+    const skipCountdown = document.getElementById('skip-countdown')?.checked;
+
     this.startScreen.classList.remove('active');
     this.startScreen.classList.add('hidden');
+
+    if (skipCountdown) {
+      this.beginGameplay();
+      return;
+    }
+
+    this.state = 'countdown';
     this.countdownScreen.classList.remove('hidden');
     this.countdownScreen.classList.add('active');
 

@@ -122,6 +122,23 @@ p {
   color: #8be9fd;
 }
 
+.toggle-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+}
+
+.toggle-row input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
 .start-button {
   padding: 14px 32px;
   font-size: 1.1rem;
