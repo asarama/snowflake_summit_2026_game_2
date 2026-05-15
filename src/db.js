@@ -14,7 +14,12 @@ async function getDb() {
     const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
     const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
 
-    const worker = new Worker(bundle.mainWorker);
+    const worker = new Worker(
+      URL.createObjectURL(
+        new Blob([`import "${bundle.mainWorker}";`], { type: 'application/javascript' })
+      ),
+      { type: 'module' }
+    );
     const logger = new duckdb.ConsoleLogger();
     const db = new duckdb.AsyncDuckDB(logger, worker);
     await db.instantiate(bundle.mainModule);

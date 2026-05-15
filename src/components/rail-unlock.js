@@ -13,7 +13,7 @@ AFRAME.registerComponent('rail-unlock', {
 AFRAME.registerComponent('rail-unlock-spawner', {
   schema: {
     player: { type: 'selector' },
-    spawnDistance: { type: 'number', default: 500 },
+    spawnDistance: { type: 'number', default: 400 },
     railSpacing: { type: 'number', default: RAIL_SPACING }
   },
 
