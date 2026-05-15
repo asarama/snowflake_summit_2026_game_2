@@ -46,6 +46,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Owns player speed, braking/acceleration, forward rail movement, wrapping, and rail switching.
   - Checks static `.obstacle` entities with swept Z collision and sets speed to the obstacle knockback value on hit.
   - Emits `obstacle-hit` and moves the player slightly backward after obstacle collisions.
+  - Tracks only the currently active obstacle so static obstacles can repeatedly block the player after they are clear.
   - Emits `game-speed` events every tick with the current speed.
   - Emits `rail-land` when a rail-switch hop finishes.
   - Uses rig `position.y` for the rail-switch hop arc.

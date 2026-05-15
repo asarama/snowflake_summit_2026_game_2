@@ -30,7 +30,7 @@ AFRAME.registerComponent('player-controls', {
     this.switchTargetX = this.switchStartX;
     this.wasLeftPressed = false;
     this.wasRightPressed = false;
-    this.hitObstacles = new WeakSet();
+    this.activeObstacle = null;
 
     this.onKeyDown = (event) => this.keys.add(event.code);
     this.onKeyUp = (event) => this.keys.delete(event.code);
@@ -150,15 +150,21 @@ AFRAME.registerComponent('player-controls', {
     const obstacles = this.el.sceneEl.querySelectorAll(this.data.obstacleSelector);
 
     for (const obstacle of obstacles) {
-      if (this.hitObstacles.has(obstacle)) {
-        continue;
-      }
-
       const obstaclePosition = obstacle.object3D.position;
       const obstacleData = obstacle.components.obstacle?.data;
       const radiusX = obstacleData?.radiusX ?? 0.65;
       const radiusZ = obstacleData?.radiusZ ?? 0.8;
       const isSameRail = Math.abs(position.x - obstaclePosition.x) <= radiusX;
+      const isSafelyInFront = position.z > obstaclePosition.z + radiusZ + this.data.obstacleBounceDistance * 0.5;
+
+      if (this.activeObstacle === obstacle && (!isSameRail || isSafelyInFront)) {
+        this.activeObstacle = null;
+      }
+
+      if (this.activeObstacle === obstacle) {
+        continue;
+      }
+
       const wasInFront = previousZ >= obstaclePosition.z - radiusZ;
       const isPastBack = position.z <= obstaclePosition.z + radiusZ;
       const isOverlappingZ = Math.abs(position.z - obstaclePosition.z) <= radiusZ;
@@ -170,7 +176,7 @@ AFRAME.registerComponent('player-controls', {
 
       const impactSpeed = this.speed;
 
-      this.hitObstacles.add(obstacle);
+      this.activeObstacle = obstacle;
       this.speed = this.data.obstacleKnockbackSpeed;
       position.z = obstaclePosition.z + radiusZ + this.data.obstacleBounceDistance;
       window.dispatchEvent(new CustomEvent('game-speed', { detail: { speed: this.speed } }));
