@@ -63,13 +63,17 @@ AFRAME.registerComponent('grind-sparks', {
     }
 
     this.sparkTier = nextTier;
-    this.spawnTimer += delta;
+    if (this.isOnRail()) {
+      this.spawnTimer += delta;
 
-    const spawnInterval = this.getSpawnInterval();
+      const spawnInterval = this.getSpawnInterval();
 
-    while (this.spawnTimer > spawnInterval) {
-      this.spawnTimer -= spawnInterval;
-      this.spawnSpark(nextTier);
+      while (this.spawnTimer > spawnInterval) {
+        this.spawnTimer -= spawnInterval;
+        this.spawnSpark(nextTier);
+      }
+    } else {
+      this.spawnTimer = 0;
     }
 
     this.sparks.forEach((spark) => {
@@ -104,6 +108,10 @@ AFRAME.registerComponent('grind-sparks', {
     }
 
     return 0;
+  },
+
+  isOnRail() {
+    return this.el.object3D.position.y <= 0.02;
   },
 
   getSpawnInterval() {
