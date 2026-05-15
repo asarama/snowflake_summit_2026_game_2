@@ -23,7 +23,8 @@ AFRAME.registerComponent('speed-camera', {
     obstacleShakeDuration: { type: 'number', default: 360 },
     obstacleShakeStrength: { type: 'number', default: 0.28 },
     topSpeedShakeStrength: { type: 'number', default: 0.055 },
-    speedShakeMultiplier: { type: 'number', default: 3.5 },
+    speedShakeMultiplier: { type: 'number', default: 4.0 },
+    shakeCurveExponent: { type: 'number', default: 3 },
     easing: { type: 'number', default: 15 }
   },
 
@@ -124,7 +125,7 @@ AFRAME.registerComponent('speed-camera', {
     const impactFactor = Math.max(1, (this.lastImpactSpeed || this.data.mediumSpeed) / this.data.mediumSpeed);
     const obstacleStrength = this.data.obstacleShakeStrength * impactFactor * (1 - obstacleProgress);
     const speedProgress = THREE.MathUtils.clamp((this.speed - this.data.minSpeed) / (this.data.maxSpeed - this.data.minSpeed), 0, 1);
-    const topSpeedStrength = this.data.topSpeedShakeStrength * (speedProgress * this.data.speedShakeMultiplier);
+    const topSpeedStrength = this.data.topSpeedShakeStrength * (Math.pow(speedProgress, this.data.shakeCurveExponent) * this.data.speedShakeMultiplier);
     const strength = boomStrength + obstacleStrength + topSpeedStrength;
 
     return {
