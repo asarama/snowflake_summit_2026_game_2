@@ -25,8 +25,9 @@ app.innerHTML = `
       <a-mixin id="crystalMaterial" material="color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.1; roughness: 0.25"></a-mixin>
     </a-assets>
 
-    <a-entity id="rig" position="0 1.6 7" player-controls="speed: 5">
-      <a-camera wasd-controls-enabled="false" look-controls="pointerLockEnabled: true">
+    <a-entity id="rig" position="0 0 7" player-controls="speed: 5">
+      <a-box position="0 0.6 0" width="0.8" height="1.2" depth="0.8" material="color: #ffb86c; metalness: 0.15; roughness: 0.45"></a-box>
+      <a-camera position="0 3.2 6" rotation="-24 0 0" wasd-controls-enabled="false" look-controls="enabled: false">
         <a-cursor raycaster="objects: .collectible" material="color: #ffffff; shader: flat"></a-cursor>
       </a-camera>
     </a-entity>
