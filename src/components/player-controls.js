@@ -262,14 +262,15 @@ AFRAME.registerComponent('player-controls', {
     const collectibles = this.el.sceneEl.querySelectorAll('.collectible');
 
     for (const collectible of collectibles) {
-      const collectiblePosition = collectible.object3D.position;
+      const collectibleWorldPos = new THREE.Vector3();
+      collectible.object3D.getWorldPosition(collectibleWorldPos);
       const collectibleData = collectible.components.collectible?.data;
       const radiusX = collectibleData?.radiusX ?? 0.5;
       const radiusZ = collectibleData?.radiusZ ?? 0.5;
-      const isSameRail = Math.abs(position.x - collectiblePosition.x) <= radiusX;
-      const wasInFront = previousZ >= collectiblePosition.z - radiusZ;
-      const isPastBack = position.z <= collectiblePosition.z + radiusZ;
-      const isOverlappingZ = Math.abs(position.z - collectiblePosition.z) <= radiusZ;
+      const isSameRail = Math.abs(position.x - collectibleWorldPos.x) <= radiusX;
+      const wasInFront = previousZ >= collectibleWorldPos.z - radiusZ;
+      const isPastBack = position.z <= collectibleWorldPos.z + radiusZ;
+      const isOverlappingZ = Math.abs(position.z - collectibleWorldPos.z) <= radiusZ;
       const isColliding = isSameRail && ((wasInFront && isPastBack) || isOverlappingZ);
 
       if (!isColliding) {
@@ -277,7 +278,7 @@ AFRAME.registerComponent('player-controls', {
       }
 
       window.dispatchEvent(new CustomEvent('collectible-collected', {
-        detail: { x: collectiblePosition.x, y: collectiblePosition.y, z: collectiblePosition.z }
+        detail: { x: collectibleWorldPos.x, y: collectibleWorldPos.y, z: collectibleWorldPos.z }
       }));
       collectible.parentNode.remove();
       break;

@@ -16,7 +16,6 @@ AFRAME.registerComponent('collectible', {
   init() {
     this.baseY = this.el.object3D.position.y;
     this.el.classList.add('collectible');
-    this.el.parentNode.classList.add('collectible');
     this.onClick = () => this.collect();
     this.el.addEventListener('click', this.onClick);
   },
