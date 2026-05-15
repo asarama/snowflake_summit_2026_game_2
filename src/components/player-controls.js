@@ -15,14 +15,14 @@ AFRAME.registerComponent('player-controls', {
     drag: { type: 'number', default: 1.2 },
     railCount: { type: 'int', default: 3 },
     railSpacing: { type: 'number', default: 2.4 },
-    switchDuration: { type: 'number', default: 280 },
+    switchDuration: { type: 'number', default: 200 },
     hopHeight: { type: 'number', default: 0.8 },
     jumpDuration: { type: 'number', default: 550 },
     jumpHeight: { type: 'number', default: 1.8 },
     obstacleSelector: { type: 'string', default: '.obstacle' },
     obstacleBounceDistance: { type: 'number', default: 1.25 },
     obstacleKnockbackSpeed: { type: 'number', default: -8 },
-    collectibleBoost: { type: 'number', default: 2 },
+    collectibleBoost: { type: 'number', default: 1 },
     collectibleMaxSpeed: { type: 'number', default: 100 }
   },
 
@@ -154,7 +154,7 @@ AFRAME.registerComponent('player-controls', {
     position.y = Math.max(switchY, jumpY);
     this.checkObstacleCollisions(previousZ);
     this.checkCollectibleCollisions(previousZ);
-    this.checkRailUnlocks();
+    this.checkRailUnlockCollisions(previousZ);
   },
 
   getRailX(rail) {
@@ -330,14 +330,45 @@ AFRAME.registerComponent('player-controls', {
     }
   },
 
-  checkRailUnlocks() {
-    for (const unlock of RAIL_UNLOCKS) {
-      if (this.totalDistance >= unlock.distance && !gameStateStore.activeRailIndices.includes(unlock.newRail)) {
-        gameStateStore.activeRailIndices = unlock.activeRailIndices;
+  checkRailUnlockCollisions(previousZ) {
+    const position = this.el.object3D.position;
+
+    if (!this.el.sceneEl) {
+      return;
+    }
+
+    const unlocks = this.el.sceneEl.querySelectorAll('.rail-unlock');
+
+    for (const unlock of unlocks) {
+      const unlockWorldPos = new THREE.Vector3();
+      unlock.object3D.getWorldPosition(unlockWorldPos);
+      const unlockData = unlock.components['rail-unlock']?.data;
+      const radiusX = 0.7;
+      const radiusZ = 0.7;
+      const isSameRail = Math.abs(position.x - unlockWorldPos.x) <= radiusX;
+      const wasInFront = previousZ >= unlockWorldPos.z - radiusZ;
+      const isPastBack = position.z <= unlockWorldPos.z + radiusZ;
+      const isOverlappingZ = Math.abs(position.z - unlockWorldPos.z) <= radiusZ;
+      const isColliding = isSameRail && ((wasInFront && isPastBack) || isOverlappingZ);
+
+      if (!isColliding) {
+        continue;
+      }
+
+      const tier = unlockData?.tier ?? 0;
+      const unlockConfig = RAIL_UNLOCKS[tier];
+
+      if (unlockConfig && !gameStateStore.activeRailIndices.includes(unlockConfig.newRail)) {
+        gameStateStore.activeRailIndices = unlockConfig.activeRailIndices;
         window.dispatchEvent(new CustomEvent('rail-unlock', {
-          detail: { activeRailIndices: unlock.activeRailIndices, newRail: unlock.newRail }
+          detail: { activeRailIndices: unlockConfig.activeRailIndices, newRail: unlockConfig.newRail }
         }));
       }
+
+      window.dispatchEvent(new CustomEvent('rail-unlock-collected', {
+        detail: { tier, x: unlockWorldPos.x, z: unlockWorldPos.z }
+      }));
+      break;
     }
   }
 });

@@ -4,11 +4,14 @@
 
 This is a simple A-Frame/Vite game prototype for a rail-grinding character.
 
-The player starts on a single center rail and moves forward automatically. Additional rails unlock at distance milestones. The current gameplay loop is:
+The player starts on a single center rail and moves forward automatically. Additional rails unlock by collecting special power-ups that spawn on all active rails. The current gameplay loop is:
 
 - Press `A` to hop one rail to the left (only when that rail is unlocked).
 - Press `D` to hop one rail to the right (only when that rail is unlocked).
 - Press `W` (or `ArrowUp`) to jump over obstacles.
+- Collect the glowing power-up to unlock the next rail. Collecting any one removes all spawned power-ups.
+- The first power-up unlocks a neon yellow rail and pauses gameplay to display "First".
+- The second power-up unlocks a neon red rail and pauses gameplay to display "Second".
 - Switching rails creates a hop animation.
 - Jumping creates a higher hop arc and prevents obstacle collisions while airborne.
 - Landing after a rail switch creates a short spark impact burst.
@@ -63,6 +66,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - On obstacle collision, resets `currentMaxSpeed` back to the default `maxSpeed`.
   - Emits `obstacle-hit` and moves the player slightly backward after obstacle collisions.
   - Tracks only the currently active obstacle so static obstacles can repeatedly block the player after they are clear.
+  - Checks `.rail-unlock` entities for power-up collection; collecting one updates `activeRailIndices`, emits `rail-unlock` and `rail-unlock-collected`, and unlocks the next rail.
   - Emits `game-speed` events every tick with current speed and max speed.
   - Emits `rail-land` when a rail-switch hop finishes or a jump lands.
   - Uses `getWorldPosition()` for collectible collision detection because collectibles are nested in groups.
@@ -96,6 +100,14 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - Collecting boosts player speed beyond the regular max speed.
   - The `.collectible` class is only added to the collision box entity, not the parent group.
 
+- **`src/components/rail-unlock.js`**
+  - `rail-unlock` component marks an entity as a rail-unlock power-up and stores its tier.
+  - `rail-unlock-spawner` component spawns power-up entities on all active rails ahead of the player.
+  - Each tier spawns once; if the player passes all spawned entities, they respawn further ahead.
+  - Collecting any power-up removes all currently spawned power-ups and emits `rail-unlock-collected`.
+  - Power-ups are scene-level entities, not children of platforms.
+  - First tier power-ups glow yellow; second tier glow red.
+
 - **`src/components/obstacle.js`**
   - Marks static rail blockers with the `.obstacle` class.
   - Defines simple X/Z collision radii used by `player-controls`.
@@ -103,6 +115,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - **`src/components/platform-generator.js`**
   - Generates platform segments made of ground, rails, obstacles, and collectibles.
   - Only generates rails, obstacles, and collectibles whose rail index is present in `gameStateStore.activeRailIndices`.
+  - Rail colors are driven by `RAIL_COLORS`: center rail cyan, right rail neon yellow, left rail neon red.
   - Maintains a rolling set of platform entities ahead of the player.
   - Reads `gameStateStore.isPlaying` to gate its `tick()`.
   - Removes the oldest platform after the player passes its end and appends a new platform farther forward.
@@ -111,6 +124,7 @@ When making future changes, update this `AGENTS.md` file if the change affects g
 - **`src/components/game-state.js`**
   - Manages game flow: start screen, 3-second countdown, 60-second timer, and game over screen.
   - Is the **sole writer** to `gameStateStore.isPlaying`, setting it to `true` on begin and `false` on end/reset.
+  - Temporarily pauses `isPlaying` and the timer for 2.5 seconds when a `rail-unlock-collected` event is received, displaying "First" or "Second" in a message overlay.
   - Emits `game-start`, `game-end`, and `game-reset` events.
   - Tracks score and displays final score on game over.
 
@@ -127,7 +141,9 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - `player-controls` clamps rail switching to `gameStateStore.activeRailIndices`, preventing hops to locked rails.
   - Emits `rail-unlock` event when the player crosses a distance threshold, updating `gameStateStore.activeRailIndices`.
   - Resets `gameStateStore.activeRailIndices` to `[1]` on `game-reset`.
-- Rails unlock at distance milestones: the first additional rail unlocks at **50m**, and the final rail unlocks at **150m**.
+- Rails unlock by collecting special power-ups, not by distance. The spawner places power-ups ahead on all active rails; collecting any one removes all and triggers the unlock.
+- The first power-up unlocks the right rail (neon yellow). The second unlocks the left rail (neon red).
+- Collecting a power-up pauses gameplay and the timer for 2.5 seconds to display a message overlay.
 - The game uses browser `CustomEvent`s for lightweight communication:
   - `game-speed` updates HUD, sparks, and camera.
   - `game-score` updates HUD score (total distance traveled from `player-controls`).
@@ -137,13 +153,16 @@ When making future changes, update this `AGENTS.md` file if the change affects g
   - `collectible-collected` boosts player speed beyond regular max.
   - `rail-land` triggers landing impact visuals after rail switches.
   - `obstacle-hit` triggers obstacle impact sparks and camera shake.
-  - `rail-unlock` notifies that a new rail distance threshold was reached, updating visible rails and switchable range.
+  - `rail-unlock` notifies that a new rail was unlocked, updating visible rails and switchable range.
+  - `rail-unlock-collected` notifies that the player collected a rail-unlock power-up, triggering the pause overlay and next-tier spawn.
 
 ## Development guidance
 
 - Prefer small A-Frame components under `src/components` for new behavior.
-- Keep shared gameplay constants in `src/config` when used by multiple components.
-- Avoid duplicating speed tier thresholds; import `SPEED` from `src/config/speed.js`.
+- Keep shared gameplay constants in `src/config/rails.js`
+  - Exports `RAIL_UNLOCKS` array defining which rail indices become active at each unlock tier.
+  - Exports `RAIL_COLORS` map from rail index to material properties (center rail cyan, right rail neon yellow, left rail neon red).
+- Keep shared speed configuration in `src/config/speed.js`.
 - Validate changes with `npm run build`.
 - Be careful when changing camera transform logic because the camera is a child of the moving player rig.
 - Be careful when changing spark parenting; sparks intentionally live in scene/world space so they do not follow player hops.

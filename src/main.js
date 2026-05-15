@@ -6,6 +6,7 @@ import './components/speed-camera.js';
 import './components/collectible.js';
 import './components/obstacle.js';
 import './components/platform-generator.js';
+import './components/rail-unlock.js';
 import './components/game-state.js';
 
 const app = document.querySelector('#app');
@@ -41,6 +42,12 @@ app.innerHTML = `
     </div>
   </div>
 
+  <div class="overlay message-overlay hidden" id="unlock-message-screen">
+    <div class="overlay-content">
+      <div class="unlock-message" id="unlock-message"></div>
+    </div>
+  </div>
+
   <div class="overlay hidden" id="game-over-screen">
     <div class="overlay-content">
       <h2>Game Over</h2>
@@ -53,6 +60,7 @@ app.innerHTML = `
     background="color: #07111f"
     renderer="antialias: true; colorManagement: true"
     platform-generator="player: #rig; platformCount: 3; platformLength: 36; railCount: 3; railSpacing: 2.4; startZ: 18"
+    rail-unlock-spawner="player: #rig; spawnDistance: 60; railSpacing: 2.4"
     game-state="gameDuration: 60"
   >
     <a-assets>

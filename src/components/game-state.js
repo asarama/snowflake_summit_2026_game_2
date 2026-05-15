@@ -13,9 +13,11 @@ AFRAME.registerComponent('game-state', {
     this.startScreen = document.getElementById('start-screen');
     this.countdownScreen = document.getElementById('countdown-screen');
     this.gameOverScreen = document.getElementById('game-over-screen');
+    this.unlockMessageScreen = document.getElementById('unlock-message-screen');
     this.countdownDisplay = document.getElementById('countdown');
     this.timerDisplay = document.getElementById('timer');
     this.finalScoreDisplay = document.getElementById('final-score');
+    this.unlockMessageDisplay = document.getElementById('unlock-message');
 
     this.startButton = document.getElementById('start-button');
     this.restartButton = document.getElementById('restart-button');
@@ -25,6 +27,12 @@ AFRAME.registerComponent('game-state', {
 
     window.addEventListener('game-score', (event) => {
       this.score = event.detail.score;
+    });
+
+    window.addEventListener('rail-unlock-collected', (event) => {
+      const tier = event.detail.tier;
+      const message = tier === 0 ? 'Greybeam Powerup: DuckDB engine unlocked!' : 'Greybeam Powerup: Firebolt engine unlocked!';
+      this.showUnlockMessage(message);
     });
   },
 
@@ -66,7 +74,10 @@ AFRAME.registerComponent('game-state', {
     gameStateStore.isPlaying = true;
 
     window.dispatchEvent(new CustomEvent('game-start'));
+    this.startTimer();
+  },
 
+  startTimer() {
     this.gameInterval = setInterval(() => {
       this.timeRemaining -= 1;
       this.timerDisplay.textContent = this.timeRemaining;
@@ -103,6 +114,22 @@ AFRAME.registerComponent('game-state', {
     this.startScreen.classList.add('active');
 
     window.dispatchEvent(new CustomEvent('game-reset'));
+  },
+
+  showUnlockMessage(message) {
+    gameStateStore.isPlaying = false;
+    clearInterval(this.gameInterval);
+
+    this.unlockMessageDisplay.textContent = message;
+    this.unlockMessageScreen.classList.remove('hidden');
+    this.unlockMessageScreen.classList.add('active');
+
+    setTimeout(() => {
+      this.unlockMessageScreen.classList.remove('active');
+      this.unlockMessageScreen.classList.add('hidden');
+      gameStateStore.isPlaying = true;
+      this.startTimer();
+    }, 2500);
   },
 
   remove() {

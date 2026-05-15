@@ -1,5 +1,6 @@
 import AFRAME from 'aframe';
 import { gameStateStore } from '../game-state-store.js';
+import { RAIL_COLORS } from '../config/rails.js';
 
 const PLATFORM_LENGTH = 100;
 const RAIL_SPACING = 2.4;
@@ -124,13 +125,14 @@ AFRAME.registerComponent('platform-generator', {
 
   createRail(platform, centerZ, rail) {
     const railEntity = document.createElement('a-box');
+    const colors = RAIL_COLORS[rail];
 
     railEntity.setAttribute('data-rail-index', rail);
     railEntity.setAttribute('position', { x: this.getRailX(rail), y: 0, z: centerZ });
     railEntity.setAttribute('width', 0.16);
     railEntity.setAttribute('height', 0.16);
     railEntity.setAttribute('depth', this.data.platformLength);
-    railEntity.setAttribute('material', 'color: #8be9fd; emissive: #35d6ff; emissiveIntensity: 0.7; metalness: 0.65; roughness: 0.2');
+    railEntity.setAttribute('material', `color: ${colors.color}; emissive: ${colors.emissive}; emissiveIntensity: ${colors.emissiveIntensity}; metalness: 0.65; roughness: 0.2`);
     platform.appendChild(railEntity);
   },
 
