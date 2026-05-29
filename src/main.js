@@ -41,6 +41,7 @@ app.innerHTML = `
     <div class="splash-right">
       <div class="splash-brand">
         <h2 class="splash-title">Query Surfer</h2>
+        <h3 class="splash-subtitle">by Greybeam</h3>
       </div>
       <nav class="menu-nav" id="main-menu">
         <button class="menu-button" id="start-button">FLY</button>
@@ -54,6 +55,39 @@ app.innerHTML = `
         </label>
         <button class="menu-button menu-back">Back</button>
       </div>
+    </div>
+  </div>
+
+  <div class="overlay rules-overlay hidden" id="rules-screen">
+    <div class="overlay-content rules-content">
+      <h2 class="rules-title">How to Play</h2>
+      <div class="rules-list">
+        <div class="rule-item">
+          <div class="rule-icon diamond-icon" aria-hidden="true"></div>
+          <div class="rule-text">
+            <span class="rule-label">Collect blue diamonds</span>
+            <span class="rule-desc">to increase your speed</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon asteroid-icon" aria-hidden="true"></div>
+          <div class="rule-text">
+            <span class="rule-label">Avoid hitting asteroids</span>
+            <span class="rule-desc">they slow you down</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon powerup-icon" aria-hidden="true"></div>
+          <div class="rule-text">
+            <span class="rule-label">Collect special power-ups</span>
+            <span class="rule-desc">to unlock new query paths</span>
+          </div>
+        </div>
+      </div>
+      <nav class="rules-nav">
+        <button class="menu-button menu-back" id="rules-back-button">Back</button>
+        <button class="menu-button" id="rules-start-button">Start</button>
+      </nav>
     </div>
   </div>
 

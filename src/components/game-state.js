@@ -16,6 +16,7 @@ AFRAME.registerComponent('game-state', {
     this.countdownScreen = document.getElementById('countdown-screen');
     this.gameOverScreen = document.getElementById('game-over-screen');
     this.pauseMenuScreen = document.getElementById('pause-menu-screen');
+    this.rulesScreen = document.getElementById('rules-screen');
     this.unlockMessageScreen = document.getElementById('unlock-message-screen');
     this.countdownDisplay = document.getElementById('countdown');
     this.timerDisplay = document.getElementById('timer');
@@ -33,11 +34,15 @@ AFRAME.registerComponent('game-state', {
     this.restartButton = document.getElementById('restart-button');
     this.resumeButton = document.getElementById('resume-button');
     this.exitMenuButton = document.getElementById('exit-menu-button');
+    this.rulesBackButton = document.getElementById('rules-back-button');
+    this.rulesStartButton = document.getElementById('rules-start-button');
 
     this.startButton?.addEventListener('click', () => this.startGame());
     this.restartButton?.addEventListener('click', () => this.restartGame());
     this.resumeButton?.addEventListener('click', () => this.resumeGame());
     this.exitMenuButton?.addEventListener('click', () => this.exitToMainMenu());
+    this.rulesBackButton?.addEventListener('click', () => this.showStartScreen());
+    this.rulesStartButton?.addEventListener('click', () => this.startFromRules());
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -78,10 +83,21 @@ AFRAME.registerComponent('game-state', {
   },
 
   startGame() {
-    const skipCountdown = document.getElementById('skip-countdown')?.checked;
-
     this.startScreen.classList.remove('active');
     this.startScreen.classList.add('hidden');
+    this.showRules();
+  },
+
+  showRules() {
+    this.state = 'rules';
+    this.rulesScreen.classList.remove('hidden');
+    this.rulesScreen.classList.add('active');
+  },
+
+  startFromRules() {
+    const skipCountdown = document.getElementById('skip-countdown')?.checked;
+    this.rulesScreen.classList.remove('active');
+    this.rulesScreen.classList.add('hidden');
 
     if (skipCountdown) {
       this.beginGameplay();
@@ -105,6 +121,14 @@ AFRAME.registerComponent('game-state', {
         this.countdownDisplay.textContent = countdown;
       }
     }, 1000);
+  },
+
+  showStartScreen() {
+    this.rulesScreen.classList.remove('active');
+    this.rulesScreen.classList.add('hidden');
+    this.startScreen.classList.remove('hidden');
+    this.startScreen.classList.add('active');
+    this.state = 'start';
   },
 
   beginGameplay() {
@@ -163,6 +187,10 @@ AFRAME.registerComponent('game-state', {
 
     this.gameOverScreen.classList.remove('active');
     this.gameOverScreen.classList.add('hidden');
+    this.rulesScreen.classList.remove('active');
+    this.rulesScreen.classList.add('hidden');
+    this.countdownScreen.classList.remove('active');
+    this.countdownScreen.classList.add('hidden');
     this.startScreen.classList.remove('hidden');
     this.startScreen.classList.add('active');
     this.showPanel('main');
