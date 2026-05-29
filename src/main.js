@@ -8,7 +8,7 @@ import './components/obstacle.js';
 import './components/platform-generator.js';
 import './components/rail-unlock.js';
 import './components/game-state.js';
-import splashImage from './assets/main_splash_screen.jpeg';
+import splashImage from './assets/main_splash_screen.png';
 
 const app = document.querySelector('#app');
 
