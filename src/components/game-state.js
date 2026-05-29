@@ -46,12 +46,9 @@ AFRAME.registerComponent('game-state', {
     });
 
     this.mainMenu = document.getElementById('main-menu');
-    this.enginesPanel = document.getElementById('engines-panel');
     this.settingsPanel = document.getElementById('settings-panel');
-    this.enginesButton = document.getElementById('engines-button');
     this.settingsButton = document.getElementById('settings-button');
 
-    this.enginesButton?.addEventListener('click', () => this.showPanel('engines'));
     this.settingsButton?.addEventListener('click', () => this.showPanel('settings'));
     document.querySelectorAll('.menu-back').forEach(btn => {
       btn.addEventListener('click', () => this.showPanel('main'));
@@ -293,7 +290,6 @@ AFRAME.registerComponent('game-state', {
 
   showPanel(panel) {
     this.mainMenu?.classList.toggle('hidden', panel !== 'main');
-    this.enginesPanel?.classList.toggle('hidden', panel !== 'engines');
     this.settingsPanel?.classList.toggle('hidden', panel !== 'settings');
   },
 

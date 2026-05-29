@@ -44,15 +44,8 @@ app.innerHTML = `
       </div>
       <nav class="menu-nav" id="main-menu">
         <button class="menu-button" id="start-button">FLY</button>
-        <button class="menu-button" id="engines-button">ENGINES</button>
         <button class="menu-button" id="settings-button">SETTINGS</button>
       </nav>
-      <div class="menu-panel hidden" id="engines-panel">
-        <h3>Engines</h3>
-        <p class="engine-item active">DuckDB — Active</p>
-        <p class="engine-item locked">Firebolt — Collect power-ups to unlock</p>
-        <button class="menu-button menu-back">Back</button>
-      </div>
       <div class="menu-panel hidden" id="settings-panel">
         <h3>Settings</h3>
         <label class="toggle-row">
