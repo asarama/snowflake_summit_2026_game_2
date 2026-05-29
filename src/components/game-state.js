@@ -15,6 +15,7 @@ AFRAME.registerComponent('game-state', {
     this.startScreen = document.getElementById('start-screen');
     this.countdownScreen = document.getElementById('countdown-screen');
     this.gameOverScreen = document.getElementById('game-over-screen');
+    this.pauseMenuScreen = document.getElementById('pause-menu-screen');
     this.unlockMessageScreen = document.getElementById('unlock-message-screen');
     this.countdownDisplay = document.getElementById('countdown');
     this.timerDisplay = document.getElementById('timer');
@@ -30,9 +31,19 @@ AFRAME.registerComponent('game-state', {
 
     this.startButton = document.getElementById('start-button');
     this.restartButton = document.getElementById('restart-button');
+    this.resumeButton = document.getElementById('resume-button');
+    this.exitMenuButton = document.getElementById('exit-menu-button');
 
     this.startButton?.addEventListener('click', () => this.startGame());
     this.restartButton?.addEventListener('click', () => this.restartGame());
+    this.resumeButton?.addEventListener('click', () => this.resumeGame());
+    this.exitMenuButton?.addEventListener('click', () => this.exitToMainMenu());
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.togglePauseMenu();
+      }
+    });
 
     this.mainMenu = document.getElementById('main-menu');
     this.enginesPanel = document.getElementById('engines-panel');
@@ -244,6 +255,40 @@ AFRAME.registerComponent('game-state', {
         this.unlockCountdownDisplay.textContent = countdown;
       }
     }, 1000);
+  },
+
+  togglePauseMenu() {
+    if (this.state === 'paused') {
+      this.resumeGame();
+      return;
+    }
+    if (this.state !== 'playing') return;
+
+    this.state = 'paused';
+    gameStateStore.isPlaying = false;
+    clearInterval(this.gameInterval);
+
+    this.pauseMenuScreen.classList.remove('hidden');
+    this.pauseMenuScreen.classList.add('active');
+  },
+
+  resumeGame() {
+    if (this.state !== 'paused') return;
+
+    this.pauseMenuScreen.classList.remove('active');
+    this.pauseMenuScreen.classList.add('hidden');
+
+    this.state = 'playing';
+    gameStateStore.isPlaying = true;
+    this.startTimer();
+  },
+
+  exitToMainMenu() {
+    if (this.state !== 'paused') return;
+
+    this.pauseMenuScreen.classList.remove('active');
+    this.pauseMenuScreen.classList.add('hidden');
+    this.restartGame();
   },
 
   showPanel(panel) {

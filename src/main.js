@@ -79,6 +79,16 @@ app.innerHTML = `
     </div>
   </div>
 
+  <div class="overlay hidden" id="pause-menu-screen">
+    <div class="overlay-content">
+      <h2>Paused</h2>
+      <nav class="menu-nav">
+        <button class="menu-button" id="resume-button">RESUME</button>
+        <button class="menu-button" id="exit-menu-button">EXIT TO MAIN MENU</button>
+      </nav>
+    </div>
+  </div>
+
   <div class="overlay hidden" id="game-over-screen">
     <div class="overlay-content game-over-content">
       <h2>Game Over</h2>
