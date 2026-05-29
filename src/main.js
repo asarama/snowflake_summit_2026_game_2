@@ -8,6 +8,7 @@ import './components/obstacle.js';
 import './components/platform-generator.js';
 import './components/rail-unlock.js';
 import './components/game-state.js';
+import splashImage from './assets/main_splash_screen.jpeg';
 
 const app = document.querySelector('#app');
 
@@ -24,14 +25,43 @@ app.innerHTML = `
   <div class="timer hidden" id="timer">60</div>
 
   <div class="overlay active" id="start-screen">
-    <div class="overlay-content">
-      <h2>Snowflake Summit 2026 - Query Surfer</h2>
-      <p>Avoid obstacles, collect crystals, and unlock new engines with Greybeam!</p>
-      <label class="toggle-row">
-        <input type="checkbox" id="skip-countdown">
-        Skip countdown
-      </label>
-      <button class="start-button" id="start-button">Start Game</button>
+    <div class="splash-left">
+      <img src="${splashImage}" alt="Query Surfer" class="splash-hero" />
+      <div class="particle-stream" aria-hidden="true">
+        ${Array.from({ length: 20 }, (_, i) => {
+          const top = Math.random() * 100;
+          const delay = Math.random() * 8;
+          const duration = 4 + Math.random() * 6;
+          const size = 1 + Math.random() * 2;
+          const opacity = 0.2 + Math.random() * 0.5;
+          return `<div class="particle" style="top:${top}%;animation-delay:${delay}s;animation-duration:${duration}s;width:${size}px;height:${size}px;opacity:${opacity}"></div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="splash-right">
+      <div class="splash-brand">
+        <h2 class="splash-title">Query Surfer</h2>
+        <p class="splash-tagline">Avoid obstacles, collect crystals, and unlock new engines with Greybeam!</p>
+      </div>
+      <nav class="menu-nav" id="main-menu">
+        <button class="menu-button" id="start-button">FLY</button>
+        <button class="menu-button" id="engines-button">ENGINES</button>
+        <button class="menu-button" id="settings-button">SETTINGS</button>
+      </nav>
+      <div class="menu-panel hidden" id="engines-panel">
+        <h3>Engines</h3>
+        <p class="engine-item active">DuckDB — Active</p>
+        <p class="engine-item locked">Firebolt — Collect power-ups to unlock</p>
+        <button class="menu-button menu-back">Back</button>
+      </div>
+      <div class="menu-panel hidden" id="settings-panel">
+        <h3>Settings</h3>
+        <label class="toggle-row">
+          <input type="checkbox" id="skip-countdown">
+          Skip countdown
+        </label>
+        <button class="menu-button menu-back">Back</button>
+      </div>
     </div>
   </div>
 

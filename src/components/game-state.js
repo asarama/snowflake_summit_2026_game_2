@@ -33,6 +33,19 @@ AFRAME.registerComponent('game-state', {
 
     this.startButton?.addEventListener('click', () => this.startGame());
     this.restartButton?.addEventListener('click', () => this.restartGame());
+
+    this.mainMenu = document.getElementById('main-menu');
+    this.enginesPanel = document.getElementById('engines-panel');
+    this.settingsPanel = document.getElementById('settings-panel');
+    this.enginesButton = document.getElementById('engines-button');
+    this.settingsButton = document.getElementById('settings-button');
+
+    this.enginesButton?.addEventListener('click', () => this.showPanel('engines'));
+    this.settingsButton?.addEventListener('click', () => this.showPanel('settings'));
+    document.querySelectorAll('.menu-back').forEach(btn => {
+      btn.addEventListener('click', () => this.showPanel('main'));
+    });
+
     this.saveScoreButton?.addEventListener('click', () => this.handleSaveScore());
     this.emailInput?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') this.handleSaveScore();
@@ -144,6 +157,7 @@ AFRAME.registerComponent('game-state', {
     this.gameOverScreen.classList.add('hidden');
     this.startScreen.classList.remove('hidden');
     this.startScreen.classList.add('active');
+    this.showPanel('main');
 
     window.dispatchEvent(new CustomEvent('game-reset'));
   },
@@ -230,6 +244,12 @@ AFRAME.registerComponent('game-state', {
         this.unlockCountdownDisplay.textContent = countdown;
       }
     }, 1000);
+  },
+
+  showPanel(panel) {
+    this.mainMenu?.classList.toggle('hidden', panel !== 'main');
+    this.enginesPanel?.classList.toggle('hidden', panel !== 'engines');
+    this.settingsPanel?.classList.toggle('hidden', panel !== 'settings');
   },
 
   remove() {
