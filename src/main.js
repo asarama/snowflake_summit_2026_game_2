@@ -41,7 +41,6 @@ app.innerHTML = `
     <div class="splash-right">
       <div class="splash-brand">
         <h2 class="splash-title">Query Surfer</h2>
-        <p class="splash-tagline">Avoid obstacles, collect crystals, and unlock new engines with Greybeam!</p>
       </div>
       <nav class="menu-nav" id="main-menu">
         <button class="menu-button" id="start-button">FLY</button>
