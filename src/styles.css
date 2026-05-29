@@ -127,7 +127,7 @@ p {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
   text-align: center;
   padding: 60px 50px;
   background: transparent;
